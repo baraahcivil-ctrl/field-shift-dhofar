@@ -252,6 +252,123 @@ STR = {
 }
 
 # ---------------------------------------------------------------
+# معاملات المحاصيل لمحرك التوصية (تقريبية - راجعها قبل العرض)
+# Crop parameters for the recommendation engine (approximate - verify)
+# days: مدة الموسم (المعمّرات 360 = سنة كاملة) | kc: معامل المحصول المتوسط (FAO-56، تقريبي)
+# root: عمق الجذور المتوسط (م) | salt: تحمّل الملوحة 1 منخفض ... 3 عالٍ
+# fix: يثبّت النيتروجين | n: احتياج النيتروجين 0 يضيف، 1 متوسط، 2 عالٍ
+# ---------------------------------------------------------------
+CROP_IDS = ["sorghum", "rhodes", "alfalfa", "cowpea", "tomato", "watermelon"]
+CROP_PARAMS = {
+    "sorghum":    dict(days=120, kc=0.85, root=1.5,  salt=3.0, fix=False, n=1, fam="poaceae"),
+    "rhodes":     dict(days=360, kc=0.90, root=1.0,  salt=2.5, fix=False, n=2, fam="poaceae"),
+    "alfalfa":    dict(days=360, kc=0.95, root=1.5,  salt=1.5, fix=True,  n=0, fam="fabaceae"),
+    "cowpea":     dict(days=90,  kc=0.75, root=0.8,  salt=2.0, fix=True,  n=0, fam="fabaceae"),
+    "tomato":     dict(days=150, kc=0.85, root=1.1,  salt=1.5, fix=False, n=2, fam="solanaceae"),
+    "watermelon": dict(days=95,  kc=0.75, root=1.15, salt=1.5, fix=False, n=1, fam="cucurbitaceae"),
+}
+CROP_NAME = {cid: CROPS[i]["name"] for i, cid in enumerate(CROP_IDS)}
+
+MONTHS = {
+    "ar": ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو",
+           "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"],
+    "en": ["January", "February", "March", "April", "May", "June",
+           "July", "August", "September", "October", "November", "December"],
+}
+
+STR2 = {
+    "ar": {
+        "rec_title": "أي دورة زراعية أنسب لحقلك؟",
+        "rec_intro": "اختر المحصول السابق وشهر الزراعة وأولوياتك، وسنرتّب لك المحاصيل التالية الأنسب مع السبب.",
+        "in_prev": "المحصول الذي زرعته الموسم الماضي",
+        "in_month": "شهر الزراعة القادم",
+        "in_sal": "ملوحة الماء أو التربة",
+        "in_scn": "سيناريو المناخ",
+        "scn_now": "المناخ الحالي",
+        "scn_stress": "أحرّ وأجفّ (اختبار إجهاد)",
+        "sal_low": "منخفضة (ماء وتربة عذبة)",
+        "sal_med": "متوسطة",
+        "sal_high": "عالية (قرب الساحل أو آبار مالحة)",
+        "pri_title": "ما الأهم لك؟ (0 غير مهم، 10 مهم جداً)",
+        "p_water": "توفير المياه",
+        "p_soil": "صحة التربة",
+        "p_salt": "تحمّل الملوحة",
+        "res_title": "أفضل 3 دورات زراعية لك",
+        "res_intro": "بعد {prev}، هذه المحاصيل الأنسب لموقعك وأولوياتك:",
+        "of100": "من 100",
+        "b_water": "المياه",
+        "b_soil": "التربة",
+        "b_salt": "الملوحة",
+        "sum_best": "ريّ الخيار الأول",
+        "sum_prev": "ريّ المحصول السابق",
+        "sum_diff": "التوفير المتوقع",
+        "u_mm_season": "ملم للموسم",
+        "others": "باقي الخيارات",
+        "stress_note": "في سيناريو الإجهاد: التبخر-نتح +10% والأمطار -15%. هذا اختبار توضيحي وليس توقعاً.",
+        "disclaimer": "الدرجات أداة مساعدة مبنية على قواعد مبسطة ومعاملات الفاو التقريبية، وليست توقعاً للإنتاج. الدخل غير داخل في الحساب لعدم توفر أسعار محلية موثقة.",
+        "why": {
+            "ir": "يحتاج ريّاً بنحو {ir} ملم خلال الموسم (تبخر-نتح ناسا مطروحاً منه المطر الفعّال).",
+            "ir_less": "ريّه أقل من {prev} بنحو {d} ملم.",
+            "ir_more": "ريّه أكثر من {prev} بنحو {d} ملم.",
+            "fam_diff": "من عائلة نباتية مختلفة عن {prev}، فيقل تراكم الآفات والأمراض.",
+            "fam_same": "من نفس عائلة {prev}، فيزيد خطر تراكم الآفات والأمراض.",
+            "fix": "يثبّت النيتروجين في التربة، وقد يقلل احتياج السماد.",
+            "after_legume": "يستفيد من النيتروجين الذي تركه {prev}.",
+            "double_n": "محصول نهم للنيتروجين بعد {prev} النهم أيضاً، فيرهق التربة.",
+            "root": "جذوره بعمق مختلف عن {prev}، فيستفيد من طبقات تربة أخرى.",
+            "salt_ok": "يتحمل مستوى الملوحة الذي اخترته.",
+            "salt_bad": "حساس للملوحة عند المستوى الذي اخترته.",
+        },
+    },
+    "en": {
+        "rec_title": "Which rotation suits your field?",
+        "rec_intro": "Choose your previous crop, planting month and priorities, and we'll rank the best next crops with the reasons.",
+        "in_prev": "Crop you grew last season",
+        "in_month": "Next planting month",
+        "in_sal": "Water or soil salinity",
+        "in_scn": "Climate scenario",
+        "scn_now": "Current climate",
+        "scn_stress": "Hotter and drier (stress test)",
+        "sal_low": "Low (fresh water and soil)",
+        "sal_med": "Medium",
+        "sal_high": "High (near the coast or saline wells)",
+        "pri_title": "What matters most to you? (0 = not important, 10 = very important)",
+        "p_water": "Water saving",
+        "p_soil": "Soil health",
+        "p_salt": "Salinity tolerance",
+        "res_title": "Your top 3 rotations",
+        "res_intro": "After {prev}, these crops fit your location and priorities best:",
+        "of100": "out of 100",
+        "b_water": "Water",
+        "b_soil": "Soil",
+        "b_salt": "Salinity",
+        "sum_best": "Irrigation, top pick",
+        "sum_prev": "Irrigation, previous crop",
+        "sum_diff": "Expected saving",
+        "u_mm_season": "mm per season",
+        "others": "Other options",
+        "stress_note": "In the stress scenario: evapotranspiration +10% and rainfall -15%. This is an illustrative test, not a forecast.",
+        "disclaimer": "Scores are a decision aid built on simplified rules and approximate FAO coefficients, not a yield forecast. Income is not included because no verified local prices are available.",
+        "why": {
+            "ir": "Needs roughly {ir} mm of irrigation over the season (NASA evapotranspiration minus effective rain).",
+            "ir_less": "Needs about {d} mm less irrigation than {prev}.",
+            "ir_more": "Needs about {d} mm more irrigation than {prev}.",
+            "fam_diff": "Different plant family from {prev}, which reduces pest and disease buildup.",
+            "fam_same": "Same plant family as {prev}, which raises pest and disease risk.",
+            "fix": "Fixes nitrogen in the soil, which can reduce fertilizer needs.",
+            "after_legume": "Benefits from the nitrogen left by {prev}.",
+            "double_n": "A nitrogen-hungry crop after {prev}, also nitrogen-hungry, which drains the soil.",
+            "root": "Roots at a different depth than {prev}, so it uses other soil layers.",
+            "salt_ok": "Tolerates the salinity level you chose.",
+            "salt_bad": "Sensitive to salinity at the level you chose.",
+        },
+    },
+}
+for _lg in STR:
+    STR[_lg].update(STR2[_lg])
+
+
+# ---------------------------------------------------------------
 # بيانات NASA POWER
 # ---------------------------------------------------------------
 def parse_power(parameters: dict, units: dict = None) -> pd.DataFrame:
@@ -325,6 +442,96 @@ def decade_trend(series: pd.Series) -> float:
         return float("nan")
     return float(np.polyfit(s.index.values, s.values, 1)[0] * 10)
 
+
+
+# ---------------------------------------------------------------
+# محرك التوصية / Recommendation engine
+# ---------------------------------------------------------------
+def peff_month(p: float) -> float:
+    """المطر الفعّال الشهري (صيغة USDA-SCS المستخدمة في الفاو)."""
+    return max(0.0, 0.6 * p - 10) if p <= 70 else 0.8 * p - 24
+
+
+def season_water(clim: pd.DataFrame, params: dict, start_month: int, scenario: str = "now"):
+    """احتياج الريّ = (Kc × التبخر-نتح من ناسا) - المطر الفعّال، على امتداد موسم المحصول."""
+    et_f, rain_f = (1.10, 0.85) if scenario == "stress" else (1.0, 1.0)
+    remaining, m = float(params["days"]), int(start_month)
+    etc = peff = 0.0
+    while remaining > 0:
+        frac = min(1.0, remaining / 30.4)
+        etc += params["kc"] * clim.loc[m, "et0_mm"] * et_f * frac
+        peff += peff_month(clim.loc[m, "rain_mm"] * rain_f) * frac
+        remaining -= 30.4
+        m = m % 12 + 1
+    return etc, peff, max(0.0, etc - peff)
+
+
+def soil_score(prev_id: str, cid: str):
+    """درجة التربة من قواعد التناوب. ترجع (الدرجة، قائمة الأسباب)."""
+    prev, cur = CROP_PARAMS[prev_id], CROP_PARAMS[cid]
+    score, why = 50.0, []
+    if cur["fam"] == prev["fam"]:
+        score -= 35
+        why.append(("warn", "fam_same"))
+    else:
+        score += 10
+        why.append(("good", "fam_diff"))
+    if cur["fix"]:
+        score += 20
+        why.append(("good", "fix"))
+    if prev["fix"] and cur["n"] == 2:
+        score += 15
+        why.append(("good", "after_legume"))
+    if prev["n"] == 2 and cur["n"] == 2:
+        score -= 15
+        why.append(("warn", "double_n"))
+    if abs(cur["root"] - prev["root"]) >= 0.4:
+        score += 10
+        why.append(("good", "root"))
+    return max(0.0, min(100.0, score)), why
+
+
+def salt_score(cid: str, level: float) -> float:
+    tol = CROP_PARAMS[cid]["salt"]
+    return 100.0 if tol >= level else max(0.0, 100.0 - (level - tol) * 50)
+
+
+def recommend(clim, prev_id, start_month, sal_level, weights, scenario="now"):
+    """يرتّب المحاصيل التالية. weights = (مياه، تربة، ملوحة)."""
+    water = {cid: season_water(clim, p, start_month, scenario)[2] for cid, p in CROP_PARAMS.items()}
+    prev_ir = water[prev_id]
+    lo, hi = min(water.values()), max(water.values())
+    w_sum = float(sum(weights)) or 3.0
+    w = weights if sum(weights) else (1, 1, 1)
+    out = []
+    for cid in CROP_IDS:
+        ir = water[cid]
+        s_w = 100.0 if hi == lo else 100.0 * (1 - (ir - lo) / (hi - lo))
+        s_s, soil_why = soil_score(prev_id, cid)
+        s_t = salt_score(cid, sal_level)
+        total = (w[0] * s_w + w[1] * s_s + w[2] * s_t) / w_sum
+        why = [("good", "ir", {"ir": int(round(ir, -1))})]
+        if cid != prev_id:
+            d = prev_ir - ir
+            if d >= 20:
+                why.append(("good", "ir_less", {"d": int(round(d, -1))}))
+            elif d <= -20:
+                why.append(("warn", "ir_more", {"d": int(round(-d, -1))}))
+        why += [(k, c, {}) for k, c in soil_why]
+        why.append(("good", "salt_ok", {}) if s_t >= 100 else ("warn", "salt_bad", {}))
+        out.append(
+            {
+                "id": cid,
+                "score": int(round(total)),
+                "water": int(round(s_w)),
+                "soil": int(round(s_s)),
+                "salt": int(round(s_t)),
+                "ir": ir,
+                "why": why,
+            }
+        )
+    out.sort(key=lambda r: (r["score"], r["soil"]), reverse=True)
+    return out, prev_ir
 
 
 # ---------------------------------------------------------------
@@ -417,6 +624,21 @@ html, body, .stApp, [data-testid="stAppViewContainer"]{
 [data-testid="stRadio"] label:has(input:checked){background:var(--forest); border-color:var(--forest);}
 [data-testid="stRadio"] label:has(input:checked) *{color:#fff !important;}
 [data-testid="stRadio"] label *{font-size:14px;}
+/* بطاقات التوصية */
+.rank{display:inline-block; background:var(--forest); color:#fff; border-radius:100px; padding:4px 14px; font-size:13px; margin-bottom:10px;}
+.score{font-family:'Cormorant Garamond','Amiri',serif; font-weight:500; font-size:clamp(44px,8vw,60px); line-height:1; margin:4px 0 14px; font-variant-numeric:lining-nums;}
+.score small{font-family:'Inter','IBM Plex Sans Arabic',sans-serif; font-size:14px; color:var(--graphite); font-weight:400;}
+.bars{margin:6px 0 16px;}
+.bar{display:flex; align-items:center; gap:10px; font-size:13px; margin:7px 0;}
+.bar-l{flex:0 0 62px; color:var(--graphite);}
+.bar-track{flex:1; height:8px; background:#fff; border-radius:100px; overflow:hidden;}
+.bar-fill{height:100%; background:var(--forest); border-radius:100px;}
+.bar-v{flex:0 0 30px; text-align:end; font-weight:500;}
+.why{display:flex; gap:10px; align-items:flex-start; font-size:14px; line-height:1.6; padding:7px 0; border-top:1px solid rgba(7,80,63,.18);}
+.mk{flex:0 0 18px; width:18px; height:18px; border:1.5px solid var(--forest); border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:10px; line-height:1; margin-top:3px; color:var(--forest);}
+.why.warn .mk{border-color:var(--charcoal); color:var(--charcoal);}
+.others{font-size:14px; color:var(--graphite); margin-top:20px; line-height:1.9;}
+.others b{color:var(--charcoal); font-weight:600;}
 </style>
 """
 
@@ -507,6 +729,32 @@ def footer_html(S) -> str:
     )
 
 
+def rec_cards_html(results, lang, S, prev_id) -> str:
+    prev_name = CROP_NAME[prev_id][lang]
+    tones = ["sage", "sky", "peach"]
+    cards = []
+    for i, r in enumerate(results):
+        bars = "".join(
+            f'<div class="bar"><span class="bar-l">{S[k]}</span>'
+            f'<div class="bar-track"><div class="bar-fill" style="width:{r[v]}%"></div></div>'
+            f'<span class="bar-v">{r[v]}</span></div>'
+            for k, v in [("b_water", "water"), ("b_soil", "soil"), ("b_salt", "salt")]
+        )
+        whys = "".join(
+            f'<div class="why {kind}"><span class="mk">{"✓" if kind == "good" else "!"}</span>'
+            f'<span>{S["why"][code].format(prev=prev_name, **params)}</span></div>'
+            for kind, code, params in r["why"]
+        )
+        cards.append(
+            f'<div class="card {tones[i % 3]}">'
+            f'<span class="rank">#{i + 1}</span>'
+            f'<div class="crop-name">{CROP_NAME[r["id"]][lang]}</div>'
+            f'<div class="score">{r["score"]} <small>{S["of100"]}</small></div>'
+            f'<div class="bars">{bars}</div>{whys}</div>'
+        )
+    return f'<div class="grid-wide">{"".join(cards)}</div>'
+
+
 def main():
     st.set_page_config(page_title="Field Shift · ظفار / Dhofar", page_icon="🌾", layout="wide")
 
@@ -531,11 +779,12 @@ def main():
         S["site_label"],
         list(SITES.keys()) + ["custom"],
         format_func=lambda k: SITE_NAMES[lang][k],
+        key="site",
     )
     if site == "custom":
         c1, c2 = st.columns(2)
-        lat = c1.number_input(S["lat"], value=17.02, format="%.3f")
-        lon = c2.number_input(S["lon"], value=54.09, format="%.3f")
+        lat = c1.number_input(S["lat"], value=17.02, format="%.3f", key="lat")
+        lon = c2.number_input(S["lon"], value=54.09, format="%.3f", key="lon")
     else:
         lat, lon = SITES[site]
         st.markdown(
@@ -553,7 +802,64 @@ def main():
     ann = annual_summary(df)
     clim = monthly_climatology(df)
 
-    # 2) ملخص المناخ / climate summary
+    # 2) التوصية / recommendation (قلب المشروع)
+    st.markdown(section_html(S["rec_title"], S["rec_intro"]), unsafe_allow_html=True)
+    a1, a2 = st.columns(2)
+    prev_id = a1.selectbox(
+        S["in_prev"], CROP_IDS, format_func=lambda k: CROP_NAME[k][lang], key="prev"
+    )
+    month = a2.selectbox(
+        S["in_month"], list(range(1, 13)), index=9,
+        format_func=lambda m: MONTHS[lang][m - 1], key="month",
+    )
+    b1, b2 = st.columns(2)
+    sal_key = b1.selectbox(
+        S["in_sal"], ["low", "med", "high"], index=1,
+        format_func=lambda k: S["sal_" + k], key="sal",
+    )
+    scenario = b2.radio(
+        S["in_scn"], ["now", "stress"], horizontal=True,
+        format_func=lambda k: S["scn_" + k], key="scn",
+    )
+    st.markdown(f'<div class="small-note">{S["pri_title"]}</div>', unsafe_allow_html=True)
+    p1, p2, p3 = st.columns(3)
+    w_water = p1.slider(S["p_water"], 0, 10, 5, key="w_water")
+    w_soil = p2.slider(S["p_soil"], 0, 10, 5, key="w_soil")
+    w_salt = p3.slider(S["p_salt"], 0, 10, 5, key="w_salt")
+
+    results, prev_ir = recommend(
+        clim, prev_id, month, {"low": 1.0, "med": 2.0, "high": 3.0}[sal_key],
+        (w_water, w_soil, w_salt), scenario,
+    )
+    top = results[:3]
+    st.markdown(
+        section_html(S["res_title"], S["res_intro"].format(prev=CROP_NAME[prev_id][lang])),
+        unsafe_allow_html=True,
+    )
+    st.markdown(rec_cards_html(top, lang, S, prev_id), unsafe_allow_html=True)
+
+    saving = prev_ir - top[0]["ir"]
+    sum_cards = "".join(
+        [
+            kpi_card(S["sum_best"], fmt(top[0]["ir"]), S["u_mm_season"], "sage"),
+            kpi_card(S["sum_prev"], fmt(prev_ir), S["u_mm_season"], "ash"),
+            kpi_card(S["sum_diff"], fmt(saving, 0, True), S["u_mm_season"], "peach"),
+        ]
+    )
+    st.markdown(f'<div class="grid" style="margin-top:24px">{sum_cards}</div>', unsafe_allow_html=True)
+
+    others = " · ".join(
+        f'<b>{CROP_NAME[r["id"]][lang]}</b> {r["score"]}' for r in results[3:]
+    )
+    if others:
+        st.markdown(
+            f'<div class="others">{S["others"]}: {others}</div>', unsafe_allow_html=True
+        )
+    if scenario == "stress":
+        st.markdown(f'<div class="small-note">{S["stress_note"]}</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="small-note">{S["disclaimer"]}</div>', unsafe_allow_html=True)
+
+    # 3) ملخص المناخ / climate summary
     st.markdown(
         section_html(S["clim_title"], S["clim_intro"].format(s=START_YEAR, e=END_YEAR)),
         unsafe_allow_html=True,
@@ -575,7 +881,7 @@ def main():
         height=320,
     )
 
-    # 3) الاتجاه / trend
+    # 4) الاتجاه / trend
     st.markdown(section_html(S["trend_title"], S["trend_intro"]), unsafe_allow_html=True)
     trend_cards = "".join(
         [
@@ -591,7 +897,7 @@ def main():
     st.line_chart(ann[["rain_mm"]].rename(columns={"rain_mm": S["t_rain"]}), color="#07503f", height=260)
     st.markdown(f'<div class="small-note">{S["trend_note"]}</div>', unsafe_allow_html=True)
 
-    # 4) المحاصيل / crops
+    # 5) المحاصيل / crops
     st.markdown(section_html(S["crops_title"], S["crops_intro"]), unsafe_allow_html=True)
     st.markdown(crop_cards_html(lang, S), unsafe_allow_html=True)
 
