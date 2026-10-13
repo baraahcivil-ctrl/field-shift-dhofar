@@ -102,7 +102,7 @@ CROPS = [
 # ---------------------------------------------------------------
 # بيانات NASA POWER
 # ---------------------------------------------------------------
-def parse_power(parameters: dict) -> pd.DataFrame:
+def parse_power(parameters: dict, units: dict = None) -> pd.DataFrame:
     """يحوّل استجابة NASA POWER الشهرية إلى جدول (سنة، شهر، متغيرات)."""
     rows = {}
     for var, series in parameters.items():
@@ -119,7 +119,10 @@ def parse_power(parameters: dict) -> pd.DataFrame:
     days = df.apply(lambda r: calendar.monthrange(int(r.year), int(r.month))[1], axis=1)
     df["rain_mm"] = df["PRECTOTCORR"] * days
     # تقدير التبخر-نتح المرجعي (Hargreaves المعتمد على الإشعاع الشمسي)
-    rs_mj = df["ALLSKY_SFC_SW_DWN"] * 3.6  # كيلوواط ساعة -> ميغاجول
+    # وحدة الإشعاع تُقرأ من استجابة ناسا نفسها: kWh -> ميغاجول، أما MJ فتبقى كما هي
+    rs_unit = ((units or {}).get("ALLSKY_SFC_SW_DWN") or "MJ/m^2/day").lower()
+    rs_factor = 3.6 if "kw" in rs_unit else 1.0
+    rs_mj = df["ALLSKY_SFC_SW_DWN"] * rs_factor
     et0_day = 0.0135 * (df["T2M"] + 17.8) * rs_mj / 2.45
     df["et0_mm"] = et0_day * days
     return df
@@ -139,7 +142,9 @@ def fetch_power(lat: float, lon: float) -> pd.DataFrame:
     }
     r = requests.get(url, params=params, timeout=60)
     r.raise_for_status()
-    return parse_power(r.json()["properties"]["parameter"])
+    js = r.json()
+    units = {k: v.get("units", "") for k, v in js.get("parameters", {}).items()}
+    return parse_power(js["properties"]["parameter"], units)
 
 
 def annual_summary(df: pd.DataFrame) -> pd.DataFrame:
@@ -247,6 +252,10 @@ html, body, .stApp, [data-testid="stAppViewContainer"]{
 }
 [data-baseweb="base-input"]{background:transparent !important; border:none !important;}
 [data-baseweb="select"] *, [data-baseweb="input"] input{color:var(--charcoal) !important;}
+[data-testid="stSelectbox"] [data-baseweb="select"] div, [data-testid="stNumberInput"] div{background-color:#fff !important; color:#212529 !important;}
+[data-testid="stSelectbox"] svg, [data-testid="stNumberInput"] svg{fill:#212529 !important;}
+[data-baseweb="popover"] *, [data-baseweb="menu"] *{background-color:#fff !important; color:#212529 !important;}
+[data-baseweb="menu"] li:hover, [data-baseweb="menu"] li:hover *{background-color:var(--sage) !important;}
 [data-testid="stAlert"]{border-radius:20px;}
 </style>
 """
