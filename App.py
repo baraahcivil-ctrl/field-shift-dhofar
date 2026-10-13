@@ -1,6 +1,8 @@
 """
-Field Shift - ظفار | الخطوة 1: بيانات المناخ من NASA POWER + جدول المحاصيل
-تشغيل محلي (اختياري):  streamlit run app.py
+Field Shift - ظفار / Dhofar  |  عربي + English
+الخطوة 1: بيانات المناخ من NASA POWER + جدول المحاصيل
+Step 1: NASA POWER climate data + crop table
+تشغيل محلي (اختياري) / Local run (optional):  streamlit run app.py
 """
 import calendar
 
@@ -13,91 +15,241 @@ START_YEAR = 2005
 END_YEAR = 2025
 
 # ---------------------------------------------------------------
-# مواقع في ظفار (خط العرض، خط الطول)
-# ملاحظة: شبكة NASA POWER دقتها تقريباً 0.5 درجة، فالمواقع القريبة تتشابه.
+# مواقع في ظفار (خط العرض، خط الطول) / Dhofar sites (lat, lon)
+# شبكة NASA POWER دقتها تقريباً 0.5 درجة، فالمواقع القريبة تتشابه.
 # ---------------------------------------------------------------
 SITES = {
-    "صلالة (السهل الساحلي)": (17.02, 54.09),
-    "ثمريت (الهضبة)": (17.67, 54.03),
-    "طاقة": (17.04, 54.40),
-    "مرباط": (16.99, 54.69),
+    "salalah": (17.02, 54.09),
+    "thumrait": (17.67, 54.03),
+    "taqah": (17.04, 54.40),
+    "mirbat": (16.99, 54.69),
 }
+SITE_NAMES = {
+    "ar": {
+        "salalah": "صلالة (السهل الساحلي)",
+        "thumrait": "ثمريت (الهضبة)",
+        "taqah": "طاقة",
+        "mirbat": "مرباط",
+        "custom": "إحداثيات أخرى",
+    },
+    "en": {
+        "salalah": "Salalah (coastal plain)",
+        "thumrait": "Thumrait (plateau)",
+        "taqah": "Taqah",
+        "mirbat": "Mirbat",
+        "custom": "Other coordinates",
+    },
+}
+
+
+def bi(ar, en=None):
+    """نص ثنائي اللغة. إن لم يُعطَ الإنجليزي يُستخدم نفس النص (للأرقام)."""
+    return {"ar": ar, "en": ar if en is None else en}
+
 
 # ---------------------------------------------------------------
 # جدول المحاصيل - قيم تقريبية من مراجع الفاو، ويجب مراجعتها قبل العرض
-# FAO-56  = Allen et al. 1998 (Crop evapotranspiration)
-# FAO-33  = Doorenbos & Kassam 1979 (Yield response to water)
-# FAO-29  = Ayers & Westcot 1985 (Water quality for agriculture)
+# Crop table - approximate values from FAO references; verify before use
+# FAO-56 = Allen et al. 1998 | FAO-33 = Doorenbos & Kassam 1979 | FAO-29 = Ayers & Westcot 1985
 # ---------------------------------------------------------------
+GRASSES = bi("النجيلية", "Grasses (Poaceae)")
+LEGUMES = bi("البقولية", "Legumes (Fabaceae)")
+PERENNIAL = bi("معمّر (قصّات متعددة)", "Perennial (multiple cuts)")
+NO = bi("لا", "No")
+YES = bi("نعم", "Yes")
+LOW_ADDS = bi("منخفض (يضيف للتربة)", "Low (adds to soil)")
+HIGH = bi("عالٍ", "High")
+MEDIUM = bi("متوسط", "Medium")
+LOW_MED = bi("منخفض إلى متوسط", "Low to medium")
+
 CROPS = [
     {
-        "المحصول": "ذرة رفيعة",
-        "العائلة النباتية": "النجيلية",
-        "مدة الموسم (يوم)": "100-140",
-        "احتياج المياه (ملم/موسم)": "450-650",
-        "عمق الجذور (م)": "1.0-2.0",
-        "يثبّت النيتروجين": "لا",
-        "استهلاك النيتروجين": "متوسط",
-        "تحمّل الملوحة": "عالٍ",
-        "المرجع": "FAO-33, FAO-56, FAO-29",
+        "name": bi("ذرة رفيعة", "Sorghum"),
+        "family": GRASSES,
+        "season": bi("100-140"),
+        "water": bi("450-650"),
+        "root": bi("1.0-2.0"),
+        "fix": NO,
+        "n_use": MEDIUM,
+        "salt": HIGH,
+        "ref": bi("FAO-33, FAO-56, FAO-29"),
     },
     {
-        "المحصول": "حشيشة رودس",
-        "العائلة النباتية": "النجيلية",
-        "مدة الموسم (يوم)": "معمّر (قصّات متعددة)",
-        "احتياج المياه (ملم/موسم)": "900-1500 سنوياً (تقديري)",
-        "عمق الجذور (م)": "0.5-1.5 (تقديري)",
-        "يثبّت النيتروجين": "لا",
-        "استهلاك النيتروجين": "عالٍ",
-        "تحمّل الملوحة": "متوسط إلى عالٍ",
-        "المرجع": "FAO-29, FAO-56 (تقديري)",
+        "name": bi("حشيشة رودس", "Rhodes grass"),
+        "family": GRASSES,
+        "season": PERENNIAL,
+        "water": bi("900-1500 سنوياً (تقديري)", "900-1500 per year (estimated)"),
+        "root": bi("0.5-1.5 (تقديري)", "0.5-1.5 (estimated)"),
+        "fix": NO,
+        "n_use": HIGH,
+        "salt": bi("متوسط إلى عالٍ", "Medium to high"),
+        "ref": bi("FAO-29, FAO-56 (تقديري)", "FAO-29, FAO-56 (estimated)"),
     },
     {
-        "المحصول": "برسيم حجازي (جت)",
-        "العائلة النباتية": "البقولية",
-        "مدة الموسم (يوم)": "معمّر (قصّات متعددة)",
-        "احتياج المياه (ملم/موسم)": "800-1600 سنوياً",
-        "عمق الجذور (م)": "1.0-2.0",
-        "يثبّت النيتروجين": "نعم",
-        "استهلاك النيتروجين": "منخفض (يضيف للتربة)",
-        "تحمّل الملوحة": "منخفض إلى متوسط",
-        "المرجع": "FAO-33, FAO-56, FAO-29",
+        "name": bi("برسيم حجازي (جت)", "Alfalfa (lucerne)"),
+        "family": LEGUMES,
+        "season": PERENNIAL,
+        "water": bi("800-1600 سنوياً", "800-1600 per year"),
+        "root": bi("1.0-2.0"),
+        "fix": YES,
+        "n_use": LOW_ADDS,
+        "salt": LOW_MED,
+        "ref": bi("FAO-33, FAO-56, FAO-29"),
     },
     {
-        "المحصول": "لوبيا",
-        "العائلة النباتية": "البقولية",
-        "مدة الموسم (يوم)": "70-110",
-        "احتياج المياه (ملم/موسم)": "300-500",
-        "عمق الجذور (م)": "0.6-1.0",
-        "يثبّت النيتروجين": "نعم",
-        "استهلاك النيتروجين": "منخفض (يضيف للتربة)",
-        "تحمّل الملوحة": "متوسط",
-        "المرجع": "FAO-33, FAO-56 (قيم الفاصوليا الجافة)",
+        "name": bi("لوبيا", "Cowpea"),
+        "family": LEGUMES,
+        "season": bi("70-110"),
+        "water": bi("300-500"),
+        "root": bi("0.6-1.0"),
+        "fix": YES,
+        "n_use": LOW_ADDS,
+        "salt": MEDIUM,
+        "ref": bi("FAO-33, FAO-56 (قيم الفاصوليا الجافة)", "FAO-33, FAO-56 (dry bean values)"),
     },
     {
-        "المحصول": "طماطم",
-        "العائلة النباتية": "الباذنجانية",
-        "مدة الموسم (يوم)": "135-180",
-        "احتياج المياه (ملم/موسم)": "400-800",
-        "عمق الجذور (م)": "0.7-1.5",
-        "يثبّت النيتروجين": "لا",
-        "استهلاك النيتروجين": "عالٍ",
-        "تحمّل الملوحة": "منخفض إلى متوسط",
-        "المرجع": "FAO-33, FAO-56, FAO-29",
+        "name": bi("طماطم", "Tomato"),
+        "family": bi("الباذنجانية", "Nightshades (Solanaceae)"),
+        "season": bi("135-180"),
+        "water": bi("400-800"),
+        "root": bi("0.7-1.5"),
+        "fix": NO,
+        "n_use": HIGH,
+        "salt": LOW_MED,
+        "ref": bi("FAO-33, FAO-56, FAO-29"),
     },
     {
-        "المحصول": "بطيخ",
-        "العائلة النباتية": "القرعيات",
-        "مدة الموسم (يوم)": "80-110",
-        "احتياج المياه (ملم/موسم)": "400-600",
-        "عمق الجذور (م)": "0.8-1.5",
-        "يثبّت النيتروجين": "لا",
-        "استهلاك النيتروجين": "متوسط",
-        "تحمّل الملوحة": "منخفض إلى متوسط (تقديري)",
-        "المرجع": "FAO-33, FAO-56",
+        "name": bi("بطيخ", "Watermelon"),
+        "family": bi("القرعيات", "Cucurbits (Cucurbitaceae)"),
+        "season": bi("80-110"),
+        "water": bi("400-600"),
+        "root": bi("0.8-1.5"),
+        "fix": NO,
+        "n_use": MEDIUM,
+        "salt": bi("منخفض إلى متوسط (تقديري)", "Low to medium (estimated)"),
+        "ref": bi("FAO-33, FAO-56"),
     },
 ]
 
+# ---------------------------------------------------------------
+# نصوص الواجهة / UI strings
+# ---------------------------------------------------------------
+STR = {
+    "ar": {
+        "place": "ظفار",
+        "marquee": [
+            "بيانات مناخية حقيقية من NASA POWER",
+            "ظفار: صلالة · ثمريت · طاقة · مرباط",
+            "أرقام المحاصيل تقريبية من مراجع الفاو",
+            "نموذج أولي لهاكاثون ناسا Space Apps",
+        ],
+        "hero_sub": "أداة دعم قرار تساعد مزارعي ظفار على استكشاف الدورات الزراعية التي تحمي التربة وتوفّر المياه، اعتماداً على بيانات ناسا.",
+        "tag_step": "الخطوة 1: المناخ والمحاصيل",
+        "site_title": "اختر موقع الحقل",
+        "site_intro": "حدّد المنطقة في ظفار لنسحب بياناتها المناخية من ناسا.",
+        "site_label": "الموقع",
+        "lat": "خط العرض",
+        "lon": "خط الطول",
+        "coords": "الإحداثيات",
+        "spinner": "جاري سحب البيانات من NASA POWER...",
+        "error": "تعذّر سحب البيانات من NASA POWER. تأكد من الاتصال بالإنترنت وأعد المحاولة.",
+        "clim_title": "ملخص المناخ",
+        "clim_intro": "متوسطات {s}–{e}. موسم الخريف في ظفار (الأشهر 6 إلى 9) هو معظم أمطار السنة.",
+        "k_temp": "متوسط الحرارة",
+        "k_rain": "الأمطار السنوية",
+        "k_et0": "التبخر-نتح (تقدير)",
+        "k_def": "العجز المائي",
+        "u_c": "°م",
+        "u_mm": "ملم",
+        "cap_bar": "الأمطار مقابل التبخر-نتح حسب الشهر (ملم)",
+        "s_rain": "الأمطار",
+        "s_et0": "التبخر-نتح",
+        "trend_title": "اتجاه المناخ",
+        "trend_intro": "كيف تغيّر المناخ في هذا الموقع خلال السنوات الماضية.",
+        "t_temp": "الحرارة",
+        "t_rain": "الأمطار",
+        "t_def": "العجز المائي",
+        "u_c_dec": "°م لكل عقد",
+        "u_mm_dec": "ملم لكل عقد",
+        "cap_temp": "متوسط الحرارة السنوي (°م)",
+        "cap_rain": "الأمطار السنوية (ملم)",
+        "trend_note": "الأمطار في ظفار متذبذبة جداً من سنة لأخرى، فالاتجاه الخطي للاستئناس فقط وليس حكماً قطعياً.",
+        "crops_title": "المحاصيل",
+        "crops_intro": "ستة محاصيل مناسبة لظفار. الأرقام تقريبية ومرجعها مكتوب في كل بطاقة.",
+        "r_season": "مدة الموسم (يوم)",
+        "r_water": "احتياج المياه (ملم)",
+        "r_root": "عمق الجذور (م)",
+        "r_fix": "يثبّت النيتروجين",
+        "r_nuse": "استهلاك النيتروجين",
+        "r_salt": "تحمّل الملوحة",
+        "notes_title": "من أين جاءت الأرقام؟",
+        "notes_intro": "الشفافية في المصادر جزء من قوة المشروع.",
+        "notes": [
+            ("المناخ", "من NASA POWER (مجاني ومفتوح)، بدقة شبكة تقريباً 0.5 درجة، فالمواقع المتقاربة تتشابه."),
+            ("التبخر-نتح", "تقدير بمعادلة هارجريفز المعتمدة على الإشعاع الشمسي، وليس قياساً مباشراً."),
+            ("المحاصيل", "أرقام تقريبية من مراجع الفاو (FAO-56, FAO-33, FAO-29) وتتغير حسب الصنف والإدارة."),
+            ("النموذج", "نموذج أولي جاهز للتحقق منه مع الخبراء الزراعيين المحليين."),
+        ],
+        "footer": "نموذج أولي لهاكاثون NASA Space Apps<br>البيانات المناخية: NASA POWER",
+    },
+    "en": {
+        "place": "Dhofar",
+        "marquee": [
+            "Real climate data from NASA POWER",
+            "Dhofar: Salalah · Thumrait · Taqah · Mirbat",
+            "Crop figures are approximate, from FAO references",
+            "Prototype for the NASA Space Apps hackathon",
+        ],
+        "hero_sub": "A decision-support tool that helps Dhofar farmers explore crop rotations that protect soil and save water, using NASA data.",
+        "tag_step": "Step 1: Climate & crops",
+        "site_title": "Choose your field location",
+        "site_intro": "Pick an area in Dhofar and we'll pull its climate data from NASA.",
+        "site_label": "Location",
+        "lat": "Latitude",
+        "lon": "Longitude",
+        "coords": "Coordinates",
+        "spinner": "Fetching data from NASA POWER...",
+        "error": "Could not fetch data from NASA POWER. Check your connection and try again.",
+        "clim_title": "Climate summary",
+        "clim_intro": "Averages for {s}–{e}. Dhofar's khareef (monsoon) season, months 6 to 9, brings most of the year's rain.",
+        "k_temp": "Mean temperature",
+        "k_rain": "Annual rainfall",
+        "k_et0": "Evapotranspiration (est.)",
+        "k_def": "Water deficit",
+        "u_c": "°C",
+        "u_mm": "mm",
+        "cap_bar": "Rainfall vs evapotranspiration by month (mm)",
+        "s_rain": "Rainfall",
+        "s_et0": "Evapotranspiration",
+        "trend_title": "Climate trend",
+        "trend_intro": "How the climate at this location has changed over the past years.",
+        "t_temp": "Temperature",
+        "t_rain": "Rainfall",
+        "t_def": "Water deficit",
+        "u_c_dec": "°C per decade",
+        "u_mm_dec": "mm per decade",
+        "cap_temp": "Annual mean temperature (°C)",
+        "cap_rain": "Annual rainfall (mm)",
+        "trend_note": "Rainfall in Dhofar varies a lot from year to year, so the linear trend is only indicative, not a firm conclusion.",
+        "crops_title": "Crops",
+        "crops_intro": "Six crops suited to Dhofar. Figures are approximate and the source is listed on each card.",
+        "r_season": "Season (days)",
+        "r_water": "Water need (mm)",
+        "r_root": "Root depth (m)",
+        "r_fix": "Fixes nitrogen",
+        "r_nuse": "Nitrogen demand",
+        "r_salt": "Salinity tolerance",
+        "notes_title": "Where do the numbers come from?",
+        "notes_intro": "Being open about sources is part of what makes this project credible.",
+        "notes": [
+            ("Climate", "From NASA POWER (free and open), on a grid of roughly 0.5°, so nearby locations look alike."),
+            ("Evapotranspiration", "An estimate from the radiation-based Hargreaves equation, not a direct measurement."),
+            ("Crops", "Approximate figures from FAO references (FAO-56, FAO-33, FAO-29); they vary with variety and management."),
+            ("The model", "A prototype, ready to be verified with local agricultural experts."),
+        ],
+        "footer": "Prototype for the NASA Space Apps hackathon<br>Climate data: NASA POWER",
+    },
+}
 
 # ---------------------------------------------------------------
 # بيانات NASA POWER
@@ -174,8 +326,9 @@ def decade_trend(series: pd.Series) -> float:
     return float(np.polyfit(s.index.values, s.values, 1)[0] * 10)
 
 
+
 # ---------------------------------------------------------------
-# الواجهة - بنمط Arva: خلفية كريمية، أخضر غابي، بطاقات باستيل، أزرار كبسولة
+# الواجهة / UI - بنمط Arva
 # ---------------------------------------------------------------
 CSS = """
 <style>
@@ -191,7 +344,7 @@ html, body, .stApp, [data-testid="stAppViewContainer"]{
 }
 [data-testid="stHeader"], [data-testid="stToolbar"], #MainMenu, footer{display:none !important;}
 .block-container{max-width:1200px !important; padding:16px 20px 60px !important;}
-[data-testid="stMain"], .block-container{direction:rtl;}
+[data-testid="stMain"], .block-container{direction:__DIR__;}
 .serif{font-family:'Cormorant Garamond','Amiri',serif; letter-spacing:-0.012em; font-variant-numeric:lining-nums;}
 
 /* شريط ليموني متحرك */
@@ -230,7 +383,7 @@ html, body, .stApp, [data-testid="stAppViewContainer"]{
 .tag{display:inline-block; background:#fff; border-radius:100px; padding:4px 14px; font-size:13px; margin:10px 0 14px;}
 .row{display:flex; justify-content:space-between; gap:14px; padding:9px 0; border-top:1px solid rgba(7,80,63,.18); font-size:14px; line-height:1.5;}
 .row span:first-child{color:var(--graphite);}
-.row span:last-child{font-weight:500; text-align:left;}
+.row span:last-child{font-weight:500; text-align:end;}
 .ref{margin-top:12px; font-size:12px; color:var(--pewter); unicode-bidi:plaintext;}
 
 /* قسم أخضر داكن */
@@ -257,15 +410,16 @@ html, body, .stApp, [data-testid="stAppViewContainer"]{
 [data-baseweb="popover"] *, [data-baseweb="menu"] *{background-color:#fff !important; color:#212529 !important;}
 [data-baseweb="menu"] li:hover, [data-baseweb="menu"] li:hover *{background-color:var(--sage) !important;}
 [data-testid="stAlert"]{border-radius:20px;}
+/* مبدّل اللغة */
+[data-testid="stRadio"] [role="radiogroup"]{gap:8px;}
+[data-testid="stRadio"] label{background:#fff; border:1px solid var(--moss); border-radius:100px; padding:6px 20px !important; margin:0 !important;}
+[data-testid="stRadio"] label > div:first-child{display:none;}
+[data-testid="stRadio"] label:has(input:checked){background:var(--forest); border-color:var(--forest);}
+[data-testid="stRadio"] label:has(input:checked) *{color:#fff !important;}
+[data-testid="stRadio"] label *{font-size:14px;}
 </style>
 """
 
-MARQUEE_ITEMS = [
-    "بيانات مناخية حقيقية من NASA POWER",
-    "ظفار: صلالة · ثمريت · طاقة · مرباط",
-    "أرقام المحاصيل تقريبية من مراجع الفاو",
-    "نموذج أولي لهاكاثون ناسا Space Apps",
-]
 TONES = ["sky", "peach", "sage", "ash"]
 
 
@@ -275,24 +429,23 @@ def fmt(x, nd=0, sign=False):
     return f"{x:+.{nd}f}" if sign else f"{x:.{nd}f}"
 
 
-def marquee_html() -> str:
+def marquee_html(S) -> str:
     one = "".join(
         f'<span class="marquee-item"><span class="chk">✓</span>{t}</span>'
-        for t in MARQUEE_ITEMS
+        for t in S["marquee"]
     )
     return f'<div class="marquee"><div class="marquee-track">{one}{one}</div></div>'
 
 
-def hero_html() -> str:
+def hero_html(S) -> str:
     return (
         '<div class="hero">'
         '<div class="hero-kicker">NASA SPACE APPS · FIELD SHIFT</div>'
-        '<div class="hero-title">Field Shift: ظفار</div>'
-        '<div class="hero-sub">أداة دعم قرار تساعد مزارعي ظفار على استكشاف الدورات الزراعية '
-        "التي تحمي التربة وتوفّر المياه، اعتماداً على بيانات ناسا.</div>"
+        f'<div class="hero-title">Field Shift · {S["place"]}</div>'
+        f'<div class="hero-sub">{S["hero_sub"]}</div>'
         '<span class="pill-tag solid">NASA POWER</span>'
         f'<span class="pill-tag">{START_YEAR}–{END_YEAR}</span>'
-        '<span class="pill-tag">الخطوة 1: المناخ والمحاصيل</span>'
+        f'<span class="pill-tag">{S["tag_step"]}</span>'
         "</div>"
     )
 
@@ -309,146 +462,141 @@ def kpi_card(label: str, value: str, unit: str, tone: str) -> str:
     )
 
 
-def crop_cards_html() -> str:
+def crop_cards_html(lang, S) -> str:
     fields = [
-        ("مدة الموسم (يوم)", "مدة الموسم"),
-        ("احتياج المياه (ملم/موسم)", "احتياج المياه (ملم)"),
-        ("عمق الجذور (م)", "عمق الجذور (م)"),
-        ("يثبّت النيتروجين", "يثبّت النيتروجين"),
-        ("استهلاك النيتروجين", "استهلاك النيتروجين"),
-        ("تحمّل الملوحة", "تحمّل الملوحة"),
+        ("season", S["r_season"]),
+        ("water", S["r_water"]),
+        ("root", S["r_root"]),
+        ("fix", S["r_fix"]),
+        ("n_use", S["r_nuse"]),
+        ("salt", S["r_salt"]),
     ]
     cards = []
     for i, c in enumerate(CROPS):
         rows = "".join(
-            f'<div class="row"><span>{label}</span><span>{c[key]}</span></div>'
+            f'<div class="row"><span>{label}</span><span>{c[key][lang]}</span></div>'
             for key, label in fields
         )
         cards.append(
             f'<div class="card {TONES[i % 4]}">'
-            f'<div class="crop-name">{c["المحصول"]}</div>'
-            f'<span class="tag">{c["العائلة النباتية"]}</span>{rows}'
-            f'<div class="ref">{c["المرجع"]}</div></div>'
+            f'<div class="crop-name">{c["name"][lang]}</div>'
+            f'<span class="tag">{c["family"][lang]}</span>{rows}'
+            f'<div class="ref">{c["ref"][lang]}</div></div>'
         )
     return f'<div class="grid-wide">{"".join(cards)}</div>'
 
 
-def notes_html() -> str:
-    items = [
-        ("المناخ", "من NASA POWER (مجاني ومفتوح)، بدقة شبكة تقريباً 0.5 درجة، فالمواقع المتقاربة تتشابه."),
-        ("التبخر-نتح", "تقدير بمعادلة هارجريفز المعتمدة على الإشعاع الشمسي، وليس قياساً مباشراً."),
-        ("المحاصيل", "أرقام تقريبية من مراجع الفاو (FAO-56, FAO-33, FAO-29) وتتغير حسب الصنف والإدارة."),
-        ("النموذج", "نموذج أولي جاهز للتحقق منه مع الخبراء الزراعيين المحليين."),
-    ]
+def notes_html(S) -> str:
     blocks = "".join(
         f'<div class="benefit"><div class="ico">{i}</div><div>'
         f'<div class="benefit-title">{t}</div><div class="benefit-body">{b}</div></div></div>'
-        for i, (t, b) in enumerate(items, 1)
+        for i, (t, b) in enumerate(S["notes"], 1)
     )
     return (
         '<div class="forest">'
-        '<div class="sec-title">من أين جاءت الأرقام؟</div>'
-        '<div class="sec-intro">الشفافية في المصادر جزء من قوة المشروع.</div>'
+        f'<div class="sec-title">{S["notes_title"]}</div>'
+        f'<div class="sec-intro">{S["notes_intro"]}</div>'
         f'<div class="benefits">{blocks}</div></div>'
     )
 
 
-def footer_html() -> str:
+def footer_html(S) -> str:
     return (
-        '<div class="footer"><div class="brand">Field Shift · ظفار</div>'
-        "نموذج أولي لهاكاثون NASA Space Apps<br>البيانات المناخية: NASA POWER</div>"
+        f'<div class="footer"><div class="brand">Field Shift · {S["place"]}</div>'
+        f'{S["footer"]}</div>'
     )
 
 
 def main():
-    st.set_page_config(page_title="Field Shift ظفار", page_icon="🌾", layout="wide")
-    st.markdown(CSS, unsafe_allow_html=True)
-    st.markdown(marquee_html(), unsafe_allow_html=True)
-    st.markdown(hero_html(), unsafe_allow_html=True)
+    st.set_page_config(page_title="Field Shift · ظفار / Dhofar", page_icon="🌾", layout="wide")
 
-    # 1) الموقع
-    st.markdown(
-        section_html("اختر موقع الحقل", "حدّد المنطقة في ظفار لنسحب بياناتها المناخية من ناسا."),
-        unsafe_allow_html=True,
+    # مبدّل اللغة / language switch
+    pick = st.radio(
+        "Language / اللغة",
+        ["العربية", "English"],
+        horizontal=True,
+        label_visibility="collapsed",
+        key="lang",
     )
-    choice = st.selectbox("الموقع", list(SITES.keys()) + ["إحداثيات أخرى"])
-    if choice == "إحداثيات أخرى":
+    lang = "ar" if pick == "العربية" else "en"
+    S = STR[lang]
+
+    st.markdown(CSS.replace("__DIR__", "rtl" if lang == "ar" else "ltr"), unsafe_allow_html=True)
+    st.markdown(marquee_html(S), unsafe_allow_html=True)
+    st.markdown(hero_html(S), unsafe_allow_html=True)
+
+    # 1) الموقع / location
+    st.markdown(section_html(S["site_title"], S["site_intro"]), unsafe_allow_html=True)
+    site = st.selectbox(
+        S["site_label"],
+        list(SITES.keys()) + ["custom"],
+        format_func=lambda k: SITE_NAMES[lang][k],
+    )
+    if site == "custom":
         c1, c2 = st.columns(2)
-        lat = c1.number_input("خط العرض", value=17.02, format="%.3f")
-        lon = c2.number_input("خط الطول", value=54.09, format="%.3f")
+        lat = c1.number_input(S["lat"], value=17.02, format="%.3f")
+        lon = c2.number_input(S["lon"], value=54.09, format="%.3f")
     else:
-        lat, lon = SITES[choice]
+        lat, lon = SITES[site]
         st.markdown(
-            f'<div class="small-note">الإحداثيات: {lat}, {lon}</div>', unsafe_allow_html=True
+            f'<div class="small-note">{S["coords"]}: {lat}, {lon}</div>', unsafe_allow_html=True
         )
 
-    with st.spinner("جاري سحب البيانات من NASA POWER..."):
+    with st.spinner(S["spinner"]):
         try:
             df = fetch_power(lat, lon)
         except Exception as e:
-            st.error("تعذّر سحب البيانات من NASA POWER. تأكد من الاتصال بالإنترنت وأعد المحاولة.")
+            st.error(S["error"])
             st.code(str(e))
             st.stop()
 
     ann = annual_summary(df)
     clim = monthly_climatology(df)
 
-    # 2) ملخص المناخ
+    # 2) ملخص المناخ / climate summary
     st.markdown(
-        section_html(
-            "ملخص المناخ",
-            f"متوسطات {START_YEAR}–{END_YEAR}. موسم الخريف في ظفار (الأشهر 6 إلى 9) هو معظم أمطار السنة.",
-        ),
+        section_html(S["clim_title"], S["clim_intro"].format(s=START_YEAR, e=END_YEAR)),
         unsafe_allow_html=True,
     )
     cards = "".join(
         [
-            kpi_card("متوسط الحرارة", fmt(ann["temp_c"].mean(), 1), "°م", "peach"),
-            kpi_card("الأمطار السنوية", fmt(ann["rain_mm"].mean()), "ملم", "sky"),
-            kpi_card("التبخر-نتح (تقدير)", fmt(ann["et0_mm"].mean()), "ملم", "sage"),
-            kpi_card("العجز المائي", fmt(ann["deficit_mm"].mean()), "ملم", "ash"),
+            kpi_card(S["k_temp"], fmt(ann["temp_c"].mean(), 1), S["u_c"], "peach"),
+            kpi_card(S["k_rain"], fmt(ann["rain_mm"].mean()), S["u_mm"], "sky"),
+            kpi_card(S["k_et0"], fmt(ann["et0_mm"].mean()), S["u_mm"], "sage"),
+            kpi_card(S["k_def"], fmt(ann["deficit_mm"].mean()), S["u_mm"], "ash"),
         ]
     )
     st.markdown(f'<div class="grid">{cards}</div>', unsafe_allow_html=True)
 
-    st.markdown('<div class="chart-cap">الأمطار مقابل التبخر-نتح حسب الشهر (ملم)</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="chart-cap">{S["cap_bar"]}</div>', unsafe_allow_html=True)
     st.bar_chart(
-        clim[["rain_mm", "et0_mm"]].rename(columns={"rain_mm": "الأمطار", "et0_mm": "التبخر-نتح"}),
+        clim[["rain_mm", "et0_mm"]].rename(columns={"rain_mm": S["s_rain"], "et0_mm": S["s_et0"]}),
         color=["#07503f", "#6d6d6d"],
         height=320,
     )
 
-    # 3) الاتجاه
-    st.markdown(
-        section_html("اتجاه المناخ", "كيف تغيّر المناخ في هذا الموقع خلال السنوات الماضية."),
-        unsafe_allow_html=True,
-    )
+    # 3) الاتجاه / trend
+    st.markdown(section_html(S["trend_title"], S["trend_intro"]), unsafe_allow_html=True)
     trend_cards = "".join(
         [
-            kpi_card("الحرارة", fmt(decade_trend(ann["temp_c"]), 2, True), "°م لكل عقد", "peach"),
-            kpi_card("الأمطار", fmt(decade_trend(ann["rain_mm"]), 0, True), "ملم لكل عقد", "sky"),
-            kpi_card("العجز المائي", fmt(decade_trend(ann["deficit_mm"]), 0, True), "ملم لكل عقد", "sage"),
+            kpi_card(S["t_temp"], fmt(decade_trend(ann["temp_c"]), 2, True), S["u_c_dec"], "peach"),
+            kpi_card(S["t_rain"], fmt(decade_trend(ann["rain_mm"]), 0, True), S["u_mm_dec"], "sky"),
+            kpi_card(S["t_def"], fmt(decade_trend(ann["deficit_mm"]), 0, True), S["u_mm_dec"], "sage"),
         ]
     )
     st.markdown(f'<div class="grid">{trend_cards}</div>', unsafe_allow_html=True)
-    st.markdown('<div class="chart-cap">متوسط الحرارة السنوي (°م)</div>', unsafe_allow_html=True)
-    st.line_chart(ann[["temp_c"]].rename(columns={"temp_c": "الحرارة"}), color="#07503f", height=260)
-    st.markdown('<div class="chart-cap">الأمطار السنوية (ملم)</div>', unsafe_allow_html=True)
-    st.line_chart(ann[["rain_mm"]].rename(columns={"rain_mm": "الأمطار"}), color="#07503f", height=260)
-    st.markdown(
-        '<div class="small-note">الأمطار في ظفار متذبذبة جداً من سنة لأخرى، فالاتجاه الخطي للاستئناس فقط وليس حكماً قطعياً.</div>',
-        unsafe_allow_html=True,
-    )
+    st.markdown(f'<div class="chart-cap">{S["cap_temp"]}</div>', unsafe_allow_html=True)
+    st.line_chart(ann[["temp_c"]].rename(columns={"temp_c": S["t_temp"]}), color="#07503f", height=260)
+    st.markdown(f'<div class="chart-cap">{S["cap_rain"]}</div>', unsafe_allow_html=True)
+    st.line_chart(ann[["rain_mm"]].rename(columns={"rain_mm": S["t_rain"]}), color="#07503f", height=260)
+    st.markdown(f'<div class="small-note">{S["trend_note"]}</div>', unsafe_allow_html=True)
 
-    # 4) المحاصيل
-    st.markdown(
-        section_html("المحاصيل", "ستة محاصيل مناسبة لظفار. الأرقام تقريبية ومرجعها مكتوب في كل بطاقة."),
-        unsafe_allow_html=True,
-    )
-    st.markdown(crop_cards_html(), unsafe_allow_html=True)
+    # 4) المحاصيل / crops
+    st.markdown(section_html(S["crops_title"], S["crops_intro"]), unsafe_allow_html=True)
+    st.markdown(crop_cards_html(lang, S), unsafe_allow_html=True)
 
-    st.markdown(notes_html(), unsafe_allow_html=True)
-    st.markdown(footer_html(), unsafe_allow_html=True)
+    st.markdown(notes_html(S), unsafe_allow_html=True)
+    st.markdown(footer_html(S), unsafe_allow_html=True)
 
 
 if __name__ == "__main__":
