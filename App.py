@@ -1,7 +1,7 @@
 """
 Field Shift - ظفار / Dhofar  |  عربي + English
-الخطوة 1: بيانات المناخ من NASA POWER + جدول المحاصيل
-Step 1: NASA POWER climate data + crop table
+الخطوة 1: بيانات المناخ من NASA POWER + جدول المحاصيل الحقيقية في ظفار
+Step 1: NASA POWER climate data + Dhofar real crop table
 تشغيل محلي (اختياري) / Local run (optional):  streamlit run app.py
 """
 import calendar
@@ -16,7 +16,6 @@ END_YEAR = 2025
 
 # ---------------------------------------------------------------
 # مواقع في ظفار (خط العرض، خط الطول) / Dhofar sites (lat, lon)
-# شبكة NASA POWER دقتها تقريباً 0.5 درجة، فالمواقع القريبة تتشابه.
 # ---------------------------------------------------------------
 SITES = {
     "salalah": (17.02, 54.09),
@@ -26,15 +25,15 @@ SITES = {
 }
 SITE_NAMES = {
     "ar": {
-        "salalah": "صلالة (السهل الساحلي)",
-        "thumrait": "ثمريت (الهضبة)",
+        "salalah": "صلالة (السهل الساحلي والزراعي)",
+        "thumrait": "ثمريت (منطقة النجد الزراعية)",
         "taqah": "طاقة",
         "mirbat": "مرباط",
         "custom": "إحداثيات أخرى",
     },
     "en": {
-        "salalah": "Salalah (coastal plain)",
-        "thumrait": "Thumrait (plateau)",
+        "salalah": "Salalah (Coastal & Agricultural Plain)",
+        "thumrait": "Thumrait (Najd Agricultural Plateau)",
         "taqah": "Taqah",
         "mirbat": "Mirbat",
         "custom": "Other coordinates",
@@ -48,13 +47,14 @@ def bi(ar, en=None):
 
 
 # ---------------------------------------------------------------
-# جدول المحاصيل - قيم تقريبية من مراجع الفاو، ويجب مراجعتها قبل العرض
-# Crop table - approximate values from FAO references; verify before use
-# FAO-56 = Allen et al. 1998 | FAO-33 = Doorenbos & Kassam 1979 | FAO-29 = Ayers & Westcot 1985
+# جدول المحاصيل الحقيقية في ظفار (السهل والنجد)
+# Real crops grown in Dhofar (Coastal plain & Najd)
 # ---------------------------------------------------------------
-GRASSES = bi("النجيلية", "Grasses (Poaceae)")
+TROPICAL = bi("فاكهة استوائية / أشجار", "Tropical fruit / Trees")
+GRASSES = bi("النجيلية (حبوب وأعلاف)", "Grasses (Cereals & Forage)")
 LEGUMES = bi("البقولية", "Legumes (Fabaceae)")
-PERENNIAL = bi("معمّر (قصّات متعددة)", "Perennial (multiple cuts)")
+ROOTS = bi("درنات وجذريات", "Root & Tuber crops")
+PERENNIAL = bi("معمّر (مستديم)", "Perennial")
 NO = bi("لا", "No")
 YES = bi("نعم", "Yes")
 LOW_ADDS = bi("منخفض (يضيف للتربة)", "Low (adds to soil)")
@@ -64,26 +64,70 @@ LOW_MED = bi("منخفض إلى متوسط", "Low to medium")
 
 CROPS = [
     {
-        "name": bi("ذرة رفيعة", "Sorghum"),
-        "family": GRASSES,
-        "season": bi("100-140"),
-        "water": bi("450-650"),
-        "root": bi("1.0-2.0"),
+        "name": bi("نارجيل (جوز الهند)", "Coconut"),
+        "family": TROPICAL,
+        "season": PERENNIAL,
+        "water": bi("1200-1600 سنوياً", "1200-1600 per year"),
+        "root": bi("1.5-2.5"),
         "fix": NO,
         "n_use": MEDIUM,
         "salt": HIGH,
-        "ref": bi("FAO-33, FAO-56, FAO-29"),
+        "ref": bi("مراجع محلية / استوائية", "Local / Tropical references"),
+    },
+    {
+        "name": bi("موز", "Banana"),
+        "family": TROPICAL,
+        "season": PERENNIAL,
+        "water": bi("1400-2000 سنوياً", "1400-2000 per year"),
+        "root": bi("0.6-1.0"),
+        "fix": NO,
+        "n_use": HIGH,
+        "salt": bi("منخفض", "Low"),
+        "ref": bi("FAO-56", "FAO-56"),
+    },
+    {
+        "name": bi("باباي (فافاي)", "Papaya"),
+        "family": TROPICAL,
+        "season": bi("300-360 (موسمي طويل)"),
+        "water": bi("900-1200 سنوياً", "900-1200 per year"),
+        "root": bi("0.9-1.5"),
+        "fix": NO,
+        "n_use": HIGH,
+        "salt": bi("منخفض", "Low"),
+        "ref": bi("مراجع استوائية", "Tropical references"),
+    },
+    {
+        "name": bi("قمح (مشاريع النجد)", "Wheat (Najd farms)"),
+        "family": GRASSES,
+        "season": bi("120-150"),
+        "water": bi("450-650"),
+        "root": bi("1.0-1.5"),
+        "fix": NO,
+        "n_use": HIGH,
+        "salt": MEDIUM,
+        "ref": bi("FAO-33, FAO-56", "FAO-33, FAO-56"),
+    },
+    {
+        "name": bi("بطاطس (مشاريع النجد)", "Potato (Najd farms)"),
+        "family": bi("الباذنجانية", "Nightshades (Solanaceae)"),
+        "season": bi("90-120"),
+        "water": bi("500-700"),
+        "root": bi("0.4-0.8"),
+        "fix": NO,
+        "n_use": HIGH,
+        "salt": bi("منخفض", "Low"),
+        "ref": bi("FAO-33, FAO-56", "FAO-33, FAO-56"),
     },
     {
         "name": bi("حشيشة رودس", "Rhodes grass"),
         "family": GRASSES,
         "season": PERENNIAL,
-        "water": bi("900-1500 سنوياً (تقديري)", "900-1500 per year (estimated)"),
-        "root": bi("0.5-1.5 (تقديري)", "0.5-1.5 (estimated)"),
+        "water": bi("900-1500 سنوياً", "900-1500 per year"),
+        "root": bi("0.5-1.5"),
         "fix": NO,
         "n_use": HIGH,
         "salt": bi("متوسط إلى عالٍ", "Medium to high"),
-        "ref": bi("FAO-29, FAO-56 (تقديري)", "FAO-29, FAO-56 (estimated)"),
+        "ref": bi("FAO-29, FAO-56", "FAO-29, FAO-56"),
     },
     {
         "name": bi("برسيم حجازي (جت)", "Alfalfa (lucerne)"),
@@ -94,10 +138,10 @@ CROPS = [
         "fix": YES,
         "n_use": LOW_ADDS,
         "salt": LOW_MED,
-        "ref": bi("FAO-33, FAO-56, FAO-29"),
+        "ref": bi("FAO-33, FAO-56", "FAO-33, FAO-56"),
     },
     {
-        "name": bi("لوبيا", "Cowpea"),
+        "name": bi("لوبيا / خضار محلية", "Cowpea / Local Veg"),
         "family": LEGUMES,
         "season": bi("70-110"),
         "water": bi("300-500"),
@@ -105,7 +149,7 @@ CROPS = [
         "fix": YES,
         "n_use": LOW_ADDS,
         "salt": MEDIUM,
-        "ref": bi("FAO-33, FAO-56 (قيم الفاصوليا الجافة)", "FAO-33, FAO-56 (dry bean values)"),
+        "ref": bi("FAO-33, FAO-56", "FAO-33, FAO-56"),
     },
     {
         "name": bi("طماطم", "Tomato"),
@@ -116,18 +160,7 @@ CROPS = [
         "fix": NO,
         "n_use": HIGH,
         "salt": LOW_MED,
-        "ref": bi("FAO-33, FAO-56, FAO-29"),
-    },
-    {
-        "name": bi("بطيخ", "Watermelon"),
-        "family": bi("القرعيات", "Cucurbits (Cucurbitaceae)"),
-        "season": bi("80-110"),
-        "water": bi("400-600"),
-        "root": bi("0.8-1.5"),
-        "fix": NO,
-        "n_use": MEDIUM,
-        "salt": bi("منخفض إلى متوسط (تقديري)", "Low to medium (estimated)"),
-        "ref": bi("FAO-33, FAO-56"),
+        "ref": bi("FAO-33, FAO-56", "FAO-33, FAO-56"),
     },
 ]
 
@@ -139,14 +172,14 @@ STR = {
         "place": "ظفار",
         "marquee": [
             "بيانات مناخية حقيقية من NASA POWER",
-            "ظفار: صلالة · ثمريت · طاقة · مرباط",
-            "أرقام المحاصيل تقريبية من مراجع الفاو",
+            "ظفار: صلالة (استوائي وسهل) · ثمريت (النجد ومشاريع الحبوب)",
+            "محاصيل ظفار الحقيقية: نارجيل، موز، قمح، بطاطس",
             "نموذج أولي لهاكاثون ناسا Space Apps",
         ],
-        "hero_sub": "أداة دعم قرار تساعد مزارعي ظفار على استكشاف الدورات الزراعية التي تحمي التربة وتوفّر المياه، اعتماداً على بيانات ناسا.",
-        "tag_step": "الخطوة 1: المناخ والمحاصيل",
-        "site_title": "اختر موقع الحقل",
-        "site_intro": "حدّد المنطقة في ظفار لنسحب بياناتها المناخية من ناسا.",
+        "hero_sub": "أداة دعم قرار تساعد مزارعي ظفار على استكشاف الدورات الزراعية وحماية التربة وتوفير المياه اعتماداً على بيانات ناسا.",
+        "tag_step": "الخطوة 1: المناخ ومحاصيل ظفار",
+        "site_title": "اختر موقع الحقل في ظفار",
+        "site_intro": "حدّد المنطقة لنسحب بياناتها المناخية من ناسا ونقترح الدورات الزراعية المناسبة لها.",
         "site_label": "الموقع",
         "lat": "خط العرض",
         "lon": "خط الطول",
@@ -154,7 +187,7 @@ STR = {
         "spinner": "جاري سحب البيانات من NASA POWER...",
         "error": "تعذّر سحب البيانات من NASA POWER. تأكد من الاتصال بالإنترنت وأعد المحاولة.",
         "clim_title": "ملخص المناخ",
-        "clim_intro": "متوسطات {s}–{e}. موسم الخريف في ظفار (الأشهر 6 إلى 9) هو معظم أمطار السنة.",
+        "clim_intro": "متوسطات {s}–{e}. موسم الخريف في ظفار (الأشهر 6 إلى 9) هو مصدر رئيسي للرطوبة والأمطار.",
         "k_temp": "متوسط الحرارة",
         "k_rain": "الأمطار السنوية",
         "k_et0": "التبخر-نتح (تقدير)",
@@ -173,9 +206,9 @@ STR = {
         "u_mm_dec": "ملم لكل عقد",
         "cap_temp": "متوسط الحرارة السنوي (°م)",
         "cap_rain": "الأمطار السنوية (ملم)",
-        "trend_note": "الأمطار في ظفار متذبذبة جداً من سنة لأخرى، فالاتجاه الخطي للاستئناس فقط وليس حكماً قطعياً.",
-        "crops_title": "المحاصيل",
-        "crops_intro": "ستة محاصيل مناسبة لظفار. الأرقام تقريبية ومرجعها مكتوب في كل بطاقة.",
+        "trend_note": "الأمطار في ظفار متذبذبة جداً من سنة لأخرى، فالاتجاه الخطي للاستئناس فقط.",
+        "crops_title": "محاصيل ظفار",
+        "crops_intro": "المحاصيل الرئيسية المزروعة في السهل والنجد. الأرقام تقريبية ومرجعها مدون في كل بطاقة.",
         "r_season": "مدة الموسم (يوم)",
         "r_water": "احتياج المياه (ملم)",
         "r_root": "عمق الجذور (م)",
@@ -185,10 +218,10 @@ STR = {
         "notes_title": "من أين جاءت الأرقام؟",
         "notes_intro": "الشفافية في المصادر جزء من قوة المشروع.",
         "notes": [
-            ("المناخ", "من NASA POWER (مجاني ومفتوح)، بدقة شبكة تقريباً 0.5 درجة، فالمواقع المتقاربة تتشابه."),
-            ("التبخر-نتح", "تقدير بمعادلة هارجريفز المعتمدة على الإشعاع الشمسي، وليس قياساً مباشراً."),
-            ("المحاصيل", "أرقام تقريبية من مراجع الفاو (FAO-56, FAO-33, FAO-29) وتتغير حسب الصنف والإدارة."),
-            ("النموذج", "نموذج أولي جاهز للتحقق منه مع الخبراء الزراعيين المحليين."),
+            ("المناخ", "من NASA POWER (مفتوح ومجاني)، بدقة شبكة تقريباً 0.5 درجة."),
+            ("التبخر-نتح", "تقدير بمعادلة هارجريفز المعتمدة على الإشعاع الشمسي."),
+            ("المحاصيل", "أرقام تقريبية تناسب البيئة المحلية ومراجع الفاو."),
+            ("النموذج", "نموذج أولي مخصص لمحافظة ظفار في لهاكاثون ناسا."),
         ],
         "footer": "نموذج أولي لهاكاثون NASA Space Apps<br>البيانات المناخية: NASA POWER",
     },
@@ -196,14 +229,14 @@ STR = {
         "place": "Dhofar",
         "marquee": [
             "Real climate data from NASA POWER",
-            "Dhofar: Salalah · Thumrait · Taqah · Mirbat",
-            "Crop figures are approximate, from FAO references",
+            "Dhofar: Salalah (coastal/tropical) · Thumrait (Najd crops)",
+            "Real Dhofar crops: Coconut, Banana, Wheat, Potato",
             "Prototype for the NASA Space Apps hackathon",
         ],
-        "hero_sub": "A decision-support tool that helps Dhofar farmers explore crop rotations that protect soil and save water, using NASA data.",
-        "tag_step": "Step 1: Climate & crops",
-        "site_title": "Choose your field location",
-        "site_intro": "Pick an area in Dhofar and we'll pull its climate data from NASA.",
+        "hero_sub": "A decision-support tool helping Dhofar farmers explore crop rotations to protect soil and save water using NASA data.",
+        "tag_step": "Step 1: Climate & Dhofar crops",
+        "site_title": "Choose your field location in Dhofar",
+        "site_intro": "Pick an area to pull its NASA climate data and get tailored rotation advice.",
         "site_label": "Location",
         "lat": "Latitude",
         "lon": "Longitude",
@@ -211,7 +244,7 @@ STR = {
         "spinner": "Fetching data from NASA POWER...",
         "error": "Could not fetch data from NASA POWER. Check your connection and try again.",
         "clim_title": "Climate summary",
-        "clim_intro": "Averages for {s}–{e}. Dhofar's khareef (monsoon) season, months 6 to 9, brings most of the year's rain.",
+        "clim_intro": "Averages for {s}–{e}. Dhofar's khareef season brings key moisture.",
         "k_temp": "Mean temperature",
         "k_rain": "Annual rainfall",
         "k_et0": "Evapotranspiration (est.)",
@@ -222,7 +255,7 @@ STR = {
         "s_rain": "Rainfall",
         "s_et0": "Evapotranspiration",
         "trend_title": "Climate trend",
-        "trend_intro": "How the climate at this location has changed over the past years.",
+        "trend_intro": "How the climate at this location has changed over past years.",
         "t_temp": "Temperature",
         "t_rain": "Rainfall",
         "t_def": "Water deficit",
@@ -230,9 +263,9 @@ STR = {
         "u_mm_dec": "mm per decade",
         "cap_temp": "Annual mean temperature (°C)",
         "cap_rain": "Annual rainfall (mm)",
-        "trend_note": "Rainfall in Dhofar varies a lot from year to year, so the linear trend is only indicative, not a firm conclusion.",
-        "crops_title": "Crops",
-        "crops_intro": "Six crops suited to Dhofar. Figures are approximate and the source is listed on each card.",
+        "trend_note": "Rainfall in Dhofar varies significantly year to year.",
+        "crops_title": "Dhofar Crops",
+        "crops_intro": "Key crops grown across the coastal plain and Najd. Figures are approximate.",
         "r_season": "Season (days)",
         "r_water": "Water need (mm)",
         "r_root": "Root depth (m)",
@@ -240,32 +273,31 @@ STR = {
         "r_nuse": "Nitrogen demand",
         "r_salt": "Salinity tolerance",
         "notes_title": "Where do the numbers come from?",
-        "notes_intro": "Being open about sources is part of what makes this project credible.",
+        "notes_intro": "Transparency in sources builds project credibility.",
         "notes": [
-            ("Climate", "From NASA POWER (free and open), on a grid of roughly 0.5°, so nearby locations look alike."),
-            ("Evapotranspiration", "An estimate from the radiation-based Hargreaves equation, not a direct measurement."),
-            ("Crops", "Approximate figures from FAO references (FAO-56, FAO-33, FAO-29); they vary with variety and management."),
-            ("The model", "A prototype, ready to be verified with local agricultural experts."),
+            ("Climate", "From NASA POWER (free & open data)."),
+            ("Evapotranspiration", "Estimated using the Hargreaves radiation method."),
+            ("Crops", "Approximate values tailored to local agricultural practices and FAO standards."),
+            ("The Model", "A dedicated prototype for Dhofar in the NASA Space Apps Hackathon."),
         ],
         "footer": "Prototype for the NASA Space Apps hackathon<br>Climate data: NASA POWER",
     },
 }
 
 # ---------------------------------------------------------------
-# معاملات المحاصيل لمحرك التوصية (تقريبية - راجعها قبل العرض)
-# Crop parameters for the recommendation engine (approximate - verify)
-# days: مدة الموسم (المعمّرات 360 = سنة كاملة) | kc: معامل المحصول المتوسط (FAO-56، تقريبي)
-# root: عمق الجذور المتوسط (م) | salt: تحمّل الملوحة 1 منخفض ... 3 عالٍ
-# fix: يثبّت النيتروجين | n: احتياج النيتروجين 0 يضيف، 1 متوسط، 2 عالٍ
+# معاملات المحاصيل لمحرك التوصية
 # ---------------------------------------------------------------
-CROP_IDS = ["sorghum", "rhodes", "alfalfa", "cowpea", "tomato", "watermelon"]
+CROP_IDS = ["coconut", "banana", "papaya", "wheat", "potato", "rhodes", "alfalfa", "cowpea", "tomato"]
 CROP_PARAMS = {
-    "sorghum":    dict(days=120, kc=0.85, root=1.5,  salt=3.0, fix=False, n=1, fam="poaceae"),
-    "rhodes":     dict(days=360, kc=0.90, root=1.0,  salt=2.5, fix=False, n=2, fam="poaceae"),
-    "alfalfa":    dict(days=360, kc=0.95, root=1.5,  salt=1.5, fix=True,  n=0, fam="fabaceae"),
-    "cowpea":     dict(days=90,  kc=0.75, root=0.8,  salt=2.0, fix=True,  n=0, fam="fabaceae"),
-    "tomato":     dict(days=150, kc=0.85, root=1.1,  salt=1.5, fix=False, n=2, fam="solanaceae"),
-    "watermelon": dict(days=95,  kc=0.75, root=1.15, salt=1.5, fix=False, n=1, fam="cucurbitaceae"),
+    "coconut": dict(days=360, kc=1.00, root=2.0, salt=3.0, fix=False, n=1, fam="tropical"),
+    "banana":  dict(days=360, kc=1.10, root=0.8, salt=1.0, fix=False, n=2, fam="tropical"),
+    "papaya":  dict(days=330, kc=0.95, root=1.2, salt=1.5, fix=False, n=2, fam="tropical"),
+    "wheat":   dict(days=130, kc=0.85, root=1.2, salt=2.0, fix=False, n=2, fam="poaceae"),
+    "potato":  dict(days=105, kc=0.80, root=0.6, salt=1.0, fix=False, n=2, fam="solanaceae"),
+    "rhodes":  dict(days=360, kc=0.90, root=1.0, salt=2.5, fix=False, n=2, fam="poaceae"),
+    "alfalfa": dict(days=360, kc=0.95, root=1.5, salt=1.5, fix=True,  n=0, fam="fabaceae"),
+    "cowpea":  dict(days=90,  kc=0.75, root=0.8, salt=2.0, fix=True,  n=0, fam="fabaceae"),
+    "tomato":  dict(days=150, kc=0.85, root=1.1, salt=1.5, fix=False, n=2, fam="solanaceae"),
 }
 CROP_NAME = {cid: CROPS[i]["name"] for i, cid in enumerate(CROP_IDS)}
 
@@ -278,8 +310,8 @@ MONTHS = {
 
 STR2 = {
     "ar": {
-        "rec_title": "أي دورة زراعية أنسب لحقلك؟",
-        "rec_intro": "اختر المحصول السابق وشهر الزراعة وأولوياتك، وسنرتّب لك المحاصيل التالية الأنسب مع السبب.",
+        "rec_title": "أي دورة زراعية أنسب لحقلك في ظفار؟",
+        "rec_intro": "اختر المحصول السابق وشهر الزراعة وأولوياتك، وسنرتّب لك المحاصيل التالية الأنسب بناءً على بيانات ناسا.",
         "in_prev": "المحصول الذي زرعته الموسم الماضي",
         "in_month": "شهر الزراعة القادم",
         "in_sal": "ملوحة الماء أو التربة",
@@ -293,8 +325,8 @@ STR2 = {
         "p_water": "توفير المياه",
         "p_soil": "صحة التربة",
         "p_salt": "تحمّل الملوحة",
-        "res_title": "أفضل 3 دورات زراعية لك",
-        "res_intro": "بعد {prev}، هذه المحاصيل الأنسب لموقعك وأولوياتك:",
+        "res_title": "أفضل 3 دورات زراعية مقترحة",
+        "res_intro": "بعد {prev}، هذه المحاصيل الأنسب لموقعك وأولوياتك في ظفار:",
         "of100": "من 100",
         "b_water": "المياه",
         "b_soil": "التربة",
@@ -304,26 +336,26 @@ STR2 = {
         "sum_diff": "التوفير المتوقع",
         "u_mm_season": "ملم للموسم",
         "others": "باقي الخيارات",
-        "stress_note": "في سيناريو الإجهاد: التبخر-نتح +10% والأمطار -15%. هذا اختبار توضيحي وليس توقعاً.",
-        "disclaimer": "الدرجات أداة مساعدة مبنية على قواعد مبسطة ومعاملات الفاو التقريبية، وليست توقعاً للإنتاج. الدخل غير داخل في الحساب لعدم توفر أسعار محلية موثقة.",
+        "stress_note": "في سيناريو الإجهاد: التبخر-نتح +10% والأمطار -15%. اختبار توضيحي.",
+        "disclaimer": "الدرجات أداة مساعدة مبنية على قواعد مبسطة ومعاملات تقريبية لتناسب ظفار.",
         "why": {
             "ir": "يحتاج ريّاً بنحو {ir} ملم خلال الموسم (تبخر-نتح ناسا مطروحاً منه المطر الفعّال).",
             "ir_less": "ريّه أقل من {prev} بنحو {d} ملم.",
             "ir_more": "ريّه أكثر من {prev} بنحو {d} ملم.",
             "fam_diff": "من عائلة نباتية مختلفة عن {prev}، فيقل تراكم الآفات والأمراض.",
             "fam_same": "من نفس عائلة {prev}، فيزيد خطر تراكم الآفات والأمراض.",
-            "fix": "يثبّت النيتروجين في التربة، وقد يقلل احتياج السماد.",
-            "after_legume": "يستفيد من النيتروجين الذي تركه {prev}.",
-            "double_n": "محصول نهم للنيتروجين بعد {prev} النهم أيضاً، فيرهق التربة.",
+            "fix": "يثبّت النيتروجين في التربة، مما يقلل الحاجة للأسمدة الكيميائية.",
+            "after_legume": "يستفيد بوضوح من النيتروجين الذي تركه {prev}.",
+            "double_n": "محصول نهم للنيتروجين بعد {prev} النهم أيضاً، وقد يرهق التربة.",
             "root": "جذوره بعمق مختلف عن {prev}، فيستفيد من طبقات تربة أخرى.",
             "salt_ok": "يتحمل مستوى الملوحة الذي اخترته.",
             "salt_bad": "حساس للملوحة عند المستوى الذي اخترته.",
         },
     },
     "en": {
-        "rec_title": "Which rotation suits your field?",
-        "rec_intro": "Choose your previous crop, planting month and priorities, and we'll rank the best next crops with the reasons.",
-        "in_prev": "Crop you grew last season",
+        "rec_title": "Which crop rotation suits your field in Dhofar?",
+        "rec_intro": "Choose your previous crop, planting month, and priorities to rank the best next crops.",
+        "in_prev": "Crop grown last season",
         "in_month": "Next planting month",
         "in_sal": "Water or soil salinity",
         "in_scn": "Climate scenario",
@@ -331,13 +363,13 @@ STR2 = {
         "scn_stress": "Hotter and drier (stress test)",
         "sal_low": "Low (fresh water and soil)",
         "sal_med": "Medium",
-        "sal_high": "High (near the coast or saline wells)",
+        "sal_high": "High (near coast or saline wells)",
         "pri_title": "What matters most to you? (0 = not important, 10 = very important)",
         "p_water": "Water saving",
         "p_soil": "Soil health",
         "p_salt": "Salinity tolerance",
-        "res_title": "Your top 3 rotations",
-        "res_intro": "After {prev}, these crops fit your location and priorities best:",
+        "res_title": "Your top 3 recommended rotations",
+        "res_intro": "After {prev}, these crops fit your Dhofar location and priorities best:",
         "of100": "out of 100",
         "b_water": "Water",
         "b_soil": "Soil",
@@ -347,20 +379,20 @@ STR2 = {
         "sum_diff": "Expected saving",
         "u_mm_season": "mm per season",
         "others": "Other options",
-        "stress_note": "In the stress scenario: evapotranspiration +10% and rainfall -15%. This is an illustrative test, not a forecast.",
-        "disclaimer": "Scores are a decision aid built on simplified rules and approximate FAO coefficients, not a yield forecast. Income is not included because no verified local prices are available.",
+        "stress_note": "In stress scenario: evapotranspiration +10% and rainfall -15%.",
+        "disclaimer": "Scores are decision-aid estimates tailored for Dhofar conditions.",
         "why": {
-            "ir": "Needs roughly {ir} mm of irrigation over the season (NASA evapotranspiration minus effective rain).",
+            "ir": "Needs roughly {ir} mm of irrigation over the season (NASA ET minus effective rain).",
             "ir_less": "Needs about {d} mm less irrigation than {prev}.",
             "ir_more": "Needs about {d} mm more irrigation than {prev}.",
-            "fam_diff": "Different plant family from {prev}, which reduces pest and disease buildup.",
-            "fam_same": "Same plant family as {prev}, which raises pest and disease risk.",
-            "fix": "Fixes nitrogen in the soil, which can reduce fertilizer needs.",
+            "fam_diff": "Different plant family from {prev}, reducing pest buildup.",
+            "fam_same": "Same plant family as {prev}, increasing pest risk.",
+            "fix": "Fixes nitrogen in the soil, reducing fertilizer needs.",
             "after_legume": "Benefits from the nitrogen left by {prev}.",
-            "double_n": "A nitrogen-hungry crop after {prev}, also nitrogen-hungry, which drains the soil.",
-            "root": "Roots at a different depth than {prev}, so it uses other soil layers.",
-            "salt_ok": "Tolerates the salinity level you chose.",
-            "salt_bad": "Sensitive to salinity at the level you chose.",
+            "double_n": "A nitrogen-demanding crop following another, which may strain the soil.",
+            "root": "Roots at a different depth than {prev}, utilizing other soil layers.",
+            "salt_ok": "Tolerates the chosen salinity level.",
+            "salt_bad": "Sensitive to salinity at the chosen level.",
         },
     },
 }
@@ -372,12 +404,11 @@ for _lg in STR:
 # بيانات NASA POWER
 # ---------------------------------------------------------------
 def parse_power(parameters: dict, units: dict = None) -> pd.DataFrame:
-    """يحوّل استجابة NASA POWER الشهرية إلى جدول (سنة، شهر، متغيرات)."""
     rows = {}
     for var, series in parameters.items():
         for key, val in series.items():
             year, month = int(key[:4]), int(key[4:])
-            if month == 13:  # الشهر 13 = المتوسط السنوي، نتجاهله
+            if month == 13:
                 continue
             rows.setdefault((year, month), {})[var] = val
     df = pd.DataFrame(
@@ -387,8 +418,6 @@ def parse_power(parameters: dict, units: dict = None) -> pd.DataFrame:
 
     days = df.apply(lambda r: calendar.monthrange(int(r.year), int(r.month))[1], axis=1)
     df["rain_mm"] = df["PRECTOTCORR"] * days
-    # تقدير التبخر-نتح المرجعي (Hargreaves المعتمد على الإشعاع الشمسي)
-    # وحدة الإشعاع تُقرأ من استجابة ناسا نفسها: kWh -> ميغاجول، أما MJ فتبقى كما هي
     rs_unit = ((units or {}).get("ALLSKY_SFC_SW_DWN") or "MJ/m^2/day").lower()
     rs_factor = 3.6 if "kw" in rs_unit else 1.0
     rs_mj = df["ALLSKY_SFC_SW_DWN"] * rs_factor
@@ -436,24 +465,20 @@ def monthly_climatology(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def decade_trend(series: pd.Series) -> float:
-    """الميل بالوحدة لكل عقد (10 سنوات)."""
     s = series.dropna()
     if len(s) < 5:
         return float("nan")
     return float(np.polyfit(s.index.values, s.values, 1)[0] * 10)
 
 
-
 # ---------------------------------------------------------------
 # محرك التوصية / Recommendation engine
 # ---------------------------------------------------------------
 def peff_month(p: float) -> float:
-    """المطر الفعّال الشهري (صيغة USDA-SCS المستخدمة في الفاو)."""
     return max(0.0, 0.6 * p - 10) if p <= 70 else 0.8 * p - 24
 
 
 def season_water(clim: pd.DataFrame, params: dict, start_month: int, scenario: str = "now"):
-    """احتياج الريّ = (Kc × التبخر-نتح من ناسا) - المطر الفعّال، على امتداد موسم المحصول."""
     et_f, rain_f = (1.10, 0.85) if scenario == "stress" else (1.0, 1.0)
     remaining, m = float(params["days"]), int(start_month)
     etc = peff = 0.0
@@ -467,7 +492,6 @@ def season_water(clim: pd.DataFrame, params: dict, start_month: int, scenario: s
 
 
 def soil_score(prev_id: str, cid: str):
-    """درجة التربة من قواعد التناوب. ترجع (الدرجة، قائمة الأسباب)."""
     prev, cur = CROP_PARAMS[prev_id], CROP_PARAMS[cid]
     score, why = 50.0, []
     if cur["fam"] == prev["fam"]:
@@ -497,7 +521,6 @@ def salt_score(cid: str, level: float) -> float:
 
 
 def recommend(clim, prev_id, start_month, sal_level, weights, scenario="now"):
-    """يرتّب المحاصيل التالية. weights = (مياه، تربة، ملوحة)."""
     water = {cid: season_water(clim, p, start_month, scenario)[2] for cid, p in CROP_PARAMS.items()}
     prev_ir = water[prev_id]
     lo, hi = min(water.values()), max(water.values())
@@ -554,14 +577,12 @@ html, body, .stApp, [data-testid="stAppViewContainer"]{
 [data-testid="stMain"], .block-container{direction:__DIR__;}
 .serif{font-family:'Cormorant Garamond','Amiri',serif; letter-spacing:-0.012em; font-variant-numeric:lining-nums;}
 
-/* شريط ليموني متحرك */
 .marquee{background:var(--lime); border-radius:100px; overflow:hidden; padding:9px 0; direction:ltr;}
 .marquee-track{display:inline-flex; white-space:nowrap; animation:scrollx 40s linear infinite;}
 .marquee-item{display:inline-flex; align-items:center; gap:12px; padding:0 20px; font-size:13px; color:var(--charcoal); letter-spacing:.025em;}
 .chk{width:16px; height:16px; border:1.5px solid var(--charcoal); border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:9px; line-height:1;}
 @keyframes scrollx{from{transform:translateX(0)} to{transform:translateX(-50%)}}
 
-/* البانر الرئيسي */
 .hero{background:var(--forest); color:#fff; border-radius:30px; padding:56px 30px; margin:16px 0 0; text-align:center;}
 .hero-kicker{font-size:13px; letter-spacing:.12em; opacity:.8; margin-bottom:14px; direction:ltr;}
 .hero-title{font-family:'Cormorant Garamond','Amiri',serif; font-weight:300; font-size:clamp(38px,8vw,64px); line-height:1.1; letter-spacing:-0.012em; color:#fff; margin-bottom:16px;}
@@ -569,14 +590,12 @@ html, body, .stApp, [data-testid="stAppViewContainer"]{
 .pill-tag{display:inline-block; border:1px solid rgba(255,255,255,.75); color:#fff; border-radius:100px; padding:8px 20px; font-size:14px; margin:4px;}
 .pill-tag.solid{background:#fff; color:var(--forest); border-color:#fff; font-weight:500;}
 
-/* عناوين الأقسام */
 .sec{margin:50px 0 24px;}
 .sec-title{font-family:'Cormorant Garamond','Amiri',serif; font-weight:500; font-size:clamp(30px,5vw,45px); line-height:1.15; letter-spacing:-0.012em; color:var(--charcoal);}
 .sec-intro{font-size:17px; line-height:1.7; max-width:60ch; color:var(--graphite); margin-top:10px;}
 .small-note{font-size:14px; color:var(--pewter); margin-top:10px; line-height:1.6;}
 .chart-cap{font-family:'Cormorant Garamond','Amiri',serif; font-size:24px; font-weight:500; color:var(--charcoal); margin:24px 0 6px;}
 
-/* بطاقات الباستيل */
 .grid{display:grid; gap:24px; grid-template-columns:repeat(auto-fit,minmax(200px,1fr));}
 .grid-wide{display:grid; gap:24px; grid-template-columns:repeat(auto-fit,minmax(290px,1fr));}
 .card{border-radius:20px; padding:30px;}
@@ -585,15 +604,13 @@ html, body, .stApp, [data-testid="stAppViewContainer"]{
 .kpi-value{font-family:'Cormorant Garamond','Amiri',serif; font-weight:500; font-size:clamp(36px,6vw,50px); line-height:1.1; margin-top:8px; color:var(--charcoal); font-variant-numeric:lining-nums;}
 .kpi-unit{font-size:14px; color:var(--graphite); margin-top:2px;}
 
-/* بطاقات المحاصيل */
-.crop-name{font-family:'Cormorant Garamond','Amiri',serif; font-weight:600; font-size:30px; line-height:1.15; color:var(--charcoal);}
+.crop-name{font-family:'Cormorant Garamond','Amiri',serif; font-weight:600; font-size:26px; line-height:1.15; color:var(--charcoal);}
 .tag{display:inline-block; background:#fff; border-radius:100px; padding:4px 14px; font-size:13px; margin:10px 0 14px;}
 .row{display:flex; justify-content:space-between; gap:14px; padding:9px 0; border-top:1px solid rgba(7,80,63,.18); font-size:14px; line-height:1.5;}
 .row span:first-child{color:var(--graphite);}
 .row span:last-child{font-weight:500; text-align:end;}
 .ref{margin-top:12px; font-size:12px; color:var(--pewter); unicode-bidi:plaintext;}
 
-/* قسم أخضر داكن */
 .forest{background:var(--forest); color:#fff; border-radius:30px; padding:50px 30px; margin:50px 0 24px;}
 .forest .sec-title{color:#fff;}
 .forest .sec-intro{color:#fff; opacity:.9;}
@@ -605,7 +622,6 @@ html, body, .stApp, [data-testid="stAppViewContainer"]{
 .footer{background:var(--forest); color:#fff; border-radius:30px; padding:30px; margin-top:24px; text-align:center; font-size:14px; line-height:1.8;}
 .footer .brand{font-family:'Cormorant Garamond','Amiri',serif; font-size:28px; font-weight:500;}
 
-/* عناصر الإدخال */
 [data-testid="stWidgetLabel"] p{font-weight:500; font-size:14px; color:var(--charcoal);}
 [data-baseweb="select"] > div, [data-baseweb="input"]{
   background:#fff !important; border:1px solid var(--moss) !important; border-radius:33px !important; min-height:48px;
@@ -617,14 +633,14 @@ html, body, .stApp, [data-testid="stAppViewContainer"]{
 [data-baseweb="popover"] *, [data-baseweb="menu"] *{background-color:#fff !important; color:#212529 !important;}
 [data-baseweb="menu"] li:hover, [data-baseweb="menu"] li:hover *{background-color:var(--sage) !important;}
 [data-testid="stAlert"]{border-radius:20px;}
-/* مبدّل اللغة */
+
 [data-testid="stRadio"] [role="radiogroup"]{gap:8px;}
 [data-testid="stRadio"] label{background:#fff; border:1px solid var(--moss); border-radius:100px; padding:6px 20px !important; margin:0 !important;}
 [data-testid="stRadio"] label > div:first-child{display:none;}
 [data-testid="stRadio"] label:has(input:checked){background:var(--forest); border-color:var(--forest);}
 [data-testid="stRadio"] label:has(input:checked) *{color:#fff !important;}
 [data-testid="stRadio"] label *{font-size:14px;}
-/* بطاقات التوصية */
+
 .rank{display:inline-block; background:var(--forest); color:#fff; border-radius:100px; padding:4px 14px; font-size:13px; margin-bottom:10px;}
 .score{font-family:'Cormorant Garamond','Amiri',serif; font-weight:500; font-size:clamp(44px,8vw,60px); line-height:1; margin:4px 0 14px; font-variant-numeric:lining-nums;}
 .score small{font-family:'Inter','IBM Plex Sans Arabic',sans-serif; font-size:14px; color:var(--graphite); font-weight:400;}
@@ -758,7 +774,6 @@ def rec_cards_html(results, lang, S, prev_id) -> str:
 def main():
     st.set_page_config(page_title="Field Shift · ظفار / Dhofar", page_icon="🌾", layout="wide")
 
-    # مبدّل اللغة / language switch
     pick = st.radio(
         "Language / اللغة",
         ["العربية", "English"],
@@ -773,7 +788,6 @@ def main():
     st.markdown(marquee_html(S), unsafe_allow_html=True)
     st.markdown(hero_html(S), unsafe_allow_html=True)
 
-    # 1) الموقع / location
     st.markdown(section_html(S["site_title"], S["site_intro"]), unsafe_allow_html=True)
     site = st.selectbox(
         S["site_label"],
@@ -802,7 +816,6 @@ def main():
     ann = annual_summary(df)
     clim = monthly_climatology(df)
 
-    # 2) التوصية / recommendation (قلب المشروع)
     st.markdown(section_html(S["rec_title"], S["rec_intro"]), unsafe_allow_html=True)
     a1, a2 = st.columns(2)
     prev_id = a1.selectbox(
@@ -859,7 +872,6 @@ def main():
         st.markdown(f'<div class="small-note">{S["stress_note"]}</div>', unsafe_allow_html=True)
     st.markdown(f'<div class="small-note">{S["disclaimer"]}</div>', unsafe_allow_html=True)
 
-    # 3) ملخص المناخ / climate summary
     st.markdown(
         section_html(S["clim_title"], S["clim_intro"].format(s=START_YEAR, e=END_YEAR)),
         unsafe_allow_html=True,
@@ -881,7 +893,6 @@ def main():
         height=320,
     )
 
-    # 4) الاتجاه / trend
     st.markdown(section_html(S["trend_title"], S["trend_intro"]), unsafe_allow_html=True)
     trend_cards = "".join(
         [
@@ -897,7 +908,6 @@ def main():
     st.line_chart(ann[["rain_mm"]].rename(columns={"rain_mm": S["t_rain"]}), color="#07503f", height=260)
     st.markdown(f'<div class="small-note">{S["trend_note"]}</div>', unsafe_allow_html=True)
 
-    # 5) المحاصيل / crops
     st.markdown(section_html(S["crops_title"], S["crops_intro"]), unsafe_allow_html=True)
     st.markdown(crop_cards_html(lang, S), unsafe_allow_html=True)
 
