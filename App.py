@@ -5,6 +5,7 @@ Step 1: NASA POWER climate data + crop table
 تشغيل محلي (اختياري) / Local run (optional):  streamlit run app.py
 """
 import calendar
+import datetime
 
 import numpy as np
 import pandas as pd
@@ -12,7 +13,7 @@ import requests
 import streamlit as st
 
 START_YEAR = 2005
-END_YEAR = 2025
+END_YEAR = datetime.date.today().year - 1  # آخر سنة كاملة / latest complete year
 
 # ---------------------------------------------------------------
 # مواقع في ظفار (خط العرض، خط الطول) / Dhofar sites (lat, lon)
@@ -105,13 +106,13 @@ STR = {
         "clim_intro": "متوسطات {s}–{e}. موسم الخريف في ظفار (الأشهر 6 إلى 9) هو معظم أمطار السنة.",
         "k_temp": "متوسط الحرارة",
         "k_rain": "الأمطار السنوية",
-        "k_et0": "التبخر-نتح (تقدير)",
+        "k_et0": "الماء الذي يسحبه الهواء (تقدير)",
         "k_def": "العجز المائي",
         "u_c": "°م",
         "u_mm": "ملم",
-        "cap_bar": "الأمطار مقابل التبخر-نتح حسب الشهر (ملم)",
+        "cap_bar": "الأمطار مقابل الماء الذي يسحبه الهواء حسب الشهر (ملم)",
         "s_rain": "الأمطار",
-        "s_et0": "التبخر-نتح",
+        "s_et0": "طلب التبخر",
         "trend_title": "اتجاه المناخ",
         "trend_intro": "كيف تغيّر المناخ في هذا الموقع خلال السنوات الماضية.",
         "t_temp": "الحرارة",
@@ -125,7 +126,7 @@ STR = {
         "crops_title": "المحاصيل",
         "crops_intro": "محاصيل مزروعة في سهل صلالة وظفار حسب تقارير منشورة. الأرقام الزراعية تقريبية وتحتاج مراجعة.",
         "r_season": "مدة الموسم (يوم)",
-        "r_kc": "معامل المحصول Kc (تقريبي)",
+        "r_kc": "معامل استهلاك الماء (تقريبي)",
         "r_root": "عمق الجذور (م)",
         "r_fix": "يثبّت النيتروجين",
         "r_nuse": "استهلاك النيتروجين",
@@ -134,7 +135,7 @@ STR = {
         "notes_intro": "الشفافية في المصادر جزء من قوة المشروع.",
         "notes": [
             ("المناخ", "من NASA POWER (مجاني ومفتوح)، بدقة شبكة تقريباً 0.5 درجة، فالمواقع المتقاربة تتشابه."),
-            ("التبخر-نتح", "تقدير بمعادلة هارجريفز المعتمدة على الإشعاع الشمسي، وليس قياساً مباشراً."),
+            ("التبخر", "تقدير بمعادلة هارجريفز المعتمدة على الإشعاع الشمسي، وليس قياساً مباشراً."),
             ("المحاصيل", "القائمة مأخوذة من تقارير منشورة عن سهل صلالة. أرقام الموسم والجذور والملوحة تقريبية من مراجع الفاو (FAO-56, FAO-29) وتتغير حسب الصنف والإدارة."),
             ("الأعلاف", "تقارير صحفية عمانية تشير إلى توجه لنقل زراعة الأعلاف من سهل صلالة إلى النجد لتخفيف استنزاف المياه الجوفية والملوحة."),
             ("النموذج", "نموذج أولي جاهز للتحقق منه مع الخبراء الزراعيين المحليين."),
@@ -163,13 +164,13 @@ STR = {
         "clim_intro": "Averages for {s}–{e}. Dhofar's khareef (monsoon) season, months 6 to 9, brings most of the year's rain.",
         "k_temp": "Mean temperature",
         "k_rain": "Annual rainfall",
-        "k_et0": "Evapotranspiration (est.)",
+        "k_et0": "Water the air takes (est.)",
         "k_def": "Water deficit",
         "u_c": "°C",
         "u_mm": "mm",
-        "cap_bar": "Rainfall vs evapotranspiration by month (mm)",
+        "cap_bar": "Rainfall vs water the air takes, by month (mm)",
         "s_rain": "Rainfall",
-        "s_et0": "Evapotranspiration",
+        "s_et0": "Evaporation demand",
         "trend_title": "Climate trend",
         "trend_intro": "How the climate at this location has changed over the past years.",
         "t_temp": "Temperature",
@@ -183,7 +184,7 @@ STR = {
         "crops_title": "Crops",
         "crops_intro": "Crops grown on the Salalah Plain and in Dhofar, based on published reports. The agronomic figures are approximate and need verification.",
         "r_season": "Season (days)",
-        "r_kc": "Crop coefficient Kc (approx.)",
+        "r_kc": "Water-use factor (approx.)",
         "r_root": "Root depth (m)",
         "r_fix": "Fixes nitrogen",
         "r_nuse": "Nitrogen demand",
@@ -192,7 +193,7 @@ STR = {
         "notes_intro": "Being open about sources is part of what makes this project credible.",
         "notes": [
             ("Climate", "From NASA POWER (free and open), on a grid of roughly 0.5°, so nearby locations look alike."),
-            ("Evapotranspiration", "An estimate from the radiation-based Hargreaves equation, not a direct measurement."),
+            ("Evaporation", "An estimate from the radiation-based Hargreaves equation, not a direct measurement."),
             ("Crops", "The list comes from published reports on the Salalah Plain. Season, root and salinity figures are approximate, from FAO references (FAO-56, FAO-29), and vary with variety and management."),
             ("Fodder", "Omani press reports mention a policy to move fodder farming from the Salalah Plain to Al Najd, to ease groundwater depletion and salinity."),
             ("The model", "A prototype, ready to be verified with local agricultural experts."),
@@ -258,14 +259,14 @@ STR2 = {
         "sum_best": "ريّ الخيار الأول",
         "sum_prev": "ريّ المحصول السابق",
         "sum_diff": "التوفير المتوقع",
-        "u_mm_season": "ملم للموسم",
+        "u_mm_season": "م³ للهكتار في الموسم",
         "others": "باقي الخيارات",
         "stress_note": "في سيناريو الإجهاد: التبخر-نتح +10% والأمطار -15%. هذا اختبار توضيحي وليس توقعاً.",
         "disclaimer": "الدرجات أداة مساعدة مبنية على قواعد مبسطة ومعاملات الفاو التقريبية، وليست توقعاً للإنتاج. الدخل غير داخل في الحساب لعدم توفر أسعار محلية موثقة.",
         "why": {
-            "ir": "يحتاج ريّاً بنحو {ir} ملم خلال الموسم (تبخر-نتح ناسا مطروحاً منه المطر الفعّال).",
-            "ir_less": "ريّه أقل من {prev} بنحو {d} ملم.",
-            "ir_more": "ريّه أكثر من {prev} بنحو {d} ملم.",
+            "ir": "يحتاج ريّاً بنحو {ir} م³ للهكتار خلال الموسم (من بيانات ناسا المناخية مطروحاً منها المطر المفيد).",
+            "ir_less": "ريّه أقل من {prev} بنحو {d} م³ للهكتار.",
+            "ir_more": "ريّه أكثر من {prev} بنحو {d} م³ للهكتار.",
             "fam_diff": "من عائلة نباتية مختلفة عن {prev}، فيقل تراكم الآفات والأمراض.",
             "fam_same": "من نفس عائلة {prev}، فيزيد خطر تراكم الآفات والأمراض.",
             "fix": "يثبّت النيتروجين في التربة، وقد يقلل احتياج السماد.",
@@ -301,14 +302,14 @@ STR2 = {
         "sum_best": "Irrigation, top pick",
         "sum_prev": "Irrigation, previous crop",
         "sum_diff": "Expected saving",
-        "u_mm_season": "mm per season",
+        "u_mm_season": "m³ per hectare per season",
         "others": "Other options",
         "stress_note": "In the stress scenario: evapotranspiration +10% and rainfall -15%. This is an illustrative test, not a forecast.",
         "disclaimer": "Scores are a decision aid built on simplified rules and approximate FAO coefficients, not a yield forecast. Income is not included because no verified local prices are available.",
         "why": {
-            "ir": "Needs roughly {ir} mm of irrigation over the season (NASA evapotranspiration minus effective rain).",
-            "ir_less": "Needs about {d} mm less irrigation than {prev}.",
-            "ir_more": "Needs about {d} mm more irrigation than {prev}.",
+            "ir": "Needs roughly {ir} m³ of irrigation per hectare over the season (NASA climate data minus usable rain).",
+            "ir_less": "Needs about {d} m³ per hectare less irrigation than {prev}.",
+            "ir_more": "Needs about {d} m³ per hectare more irrigation than {prev}.",
             "fam_diff": "Different plant family from {prev}, which reduces pest and disease buildup.",
             "fam_same": "Same plant family as {prev}, which raises pest and disease risk.",
             "fix": "Fixes nitrogen in the soil, which can reduce fertilizer needs.",
@@ -323,6 +324,100 @@ STR2 = {
 for _lg in STR:
     STR[_lg].update(STR2[_lg])
 
+
+
+STR3 = {
+    "ar": {
+        "scn_future": "نظرة مستقبلية (2040)",
+        "future_note": "نظرة 2040: الحرارة {dt} °م (امتداد اتجاه ناسا حتى 2040)، والأمطار بلا تغيير لأنها متذبذبة جداً، وملوحة المنطقة حسب توقعات الدراسة لعام 2040. تقدير وليس تنبؤاً.",
+        "zone_label": "أين يقع حقلك في السهل؟",
+        "z_coast": "الشريط الساحلي",
+        "z_injection": "حزام آبار الحقن (1–2 كم من الساحل)",
+        "z_central": "وسط السهل (منطقة المياه العذبة)",
+        "z_mountain": "أطراف الجبل (سفوح جبل القرى)",
+        "z_manual": "سأحدد الملوحة بنفسي",
+        "zone_outside": "المناطق مأخوذة من دراسة عن سهل صلالة، فتنطبق على صلالة وطاقة فقط. لهذا الموقع حدّد الملوحة بنفسك.",
+        "z_tds": "ملوحة المياه الجوفية المحسوبة بالنموذج: {now} ppm (2020) و{fut} ppm (2040).",
+        "z_tds_nofut": "ملوحة المياه الجوفية المحسوبة بالنموذج: {now} ppm. لا توقعات لعام 2040 لهذه المنطقة في الدراسة.",
+        "z_level": "مستوى الملوحة المستخدم في الحساب: {lvl}",
+        "z_src": "المصدر: Al-Hadhrami وآخرون (2024)، قيم نموذجية لا قياسات. تحويلها إلى مستويات تقدير منا ويحتاج مراجعة خبير.",
+        "lvl_1": "منخفضة", "lvl_2": "متوسطة", "lvl_3": "عالية", "lvl_4": "عالية جداً",
+        "wt_shallow": "تحذير: المياه الجوفية قريبة من السطح هنا (0 م عند الساحل حسب الدراسة). قد تصعد الأملاح إلى الجذور وقد يحدث تشبّع بالماء، فتأكد من الصرف.",
+        "wt_central": "المياه الجوفية أعمق في وسط السهل (حتى حوالي 9 م حسب الدراسة)، وهذا يقلل خطر صعود الأملاح عادةً.",
+        "sal_warn4": "الملوحة هنا أعلى مما تتحمله أي من المحاصيل المدرجة، فكل الخيارات معرّضة للخطر. فكّر في مياه أقل ملوحة أو محاصيل شديدة التحمل.",
+        "u_m3": "م³",
+        "head_less": "أقل ماءً للهكتار مقارنة بـ{prev}",
+        "head_more": "أكثر ماءً للهكتار مقارنة بـ{prev}",
+        "head_same": "احتياج مياه مماثل تقريباً لـ{prev}",
+        "head_detail": "{top}: {a} م³ للهكتار | {prev}: {b} م³ للهكتار",
+        "how_title": "كيف تُحسب الدرجات؟",
+        "how": [
+            ("احتياج الريّ", "irrigation = max(0, water-use factor × evaporation − usable rain)", "طريقة الفاو القياسية على بيانات ناسا لأشهر موسم المحصول. التبخر مقدّر من الحرارة والإشعاع الشمسي (هارجريفز)."),
+            ("درجة المياه", "100 × (1 − (irrigation − lowest) / (highest − lowest))", "تقارن المحاصيل ببعضها، فتتغير إذا تغيرت قائمة المحاصيل."),
+            ("درجة التربة", "start 50 | new family +10 | same family −35 | fixes N +20 | N-hungry after legume +15 | two N-hungry −15 | roots differ ≥ 0.4 m +10", "افتراض: نقاط تقريبية من قواعد عملية، لم يتم التحقق منها."),
+            ("درجة الملوحة", "100 if tolerance ≥ level, else 100 − 50 × (level − tolerance)", "افتراض: خطوة 50 نقطة قاعدة تقريبية، وتحمّل المحاصيل تقريبي."),
+            ("الدرجة النهائية", "(w1×water + w2×soil + w3×salinity) / (w1 + w2 + w3)", "w1 وw2 وw3 هي أوزان المنزلقات الثلاثة التي تختارها."),
+            ("ملوحة المناطق", "ppm: ≤700 low | ≤2,100 medium | ≤3,000 high | above very high", "قيم المناطق نتائج نموذج من دراسة Al-Hadhrami وآخرون (2024). تحويلها إلى مستويات تقدير منا ويحتاج مراجعة خبير."),
+            ("النظرة المستقبلية", "evaporation × (T + warming + 17.8) / (T + 17.8)", "الاحترار = اتجاه حرارة ناسا لكل عقد × السنوات حتى 2040. لا نتوقع الأمطار لأنها تتذبذب كثيراً بين السنوات."),
+        ],
+    },
+    "en": {
+        "scn_future": "Future view (2040)",
+        "future_note": "2040 view: temperature {dt} °C (the NASA trend extended to 2040), rainfall unchanged because it varies too much between years, and zone salinity from the study's 2040 projection. An estimate, not a forecast.",
+        "zone_label": "Where is your field on the plain?",
+        "z_coast": "Coastal strip",
+        "z_injection": "Injection-well belt (1–2 km from the shore)",
+        "z_central": "Central plain (freshwater zone)",
+        "z_mountain": "Mountain edge (Jabal Al Qara foothills)",
+        "z_manual": "I'll enter the salinity myself",
+        "zone_outside": "The zones come from a study of the Salalah Plain, so they apply to Salalah and Taqah only. For this location, enter the salinity yourself.",
+        "z_tds": "Modeled groundwater salinity: {now} ppm (2020) and {fut} ppm (2040).",
+        "z_tds_nofut": "Modeled groundwater salinity: {now} ppm. The study gives no 2040 projection for this zone.",
+        "z_level": "Salinity level used in the calculation: {lvl}",
+        "z_src": "Source: Al-Hadhrami et al. (2024). These are modeled values, not measurements. Converting them to levels is our own estimate and needs expert review.",
+        "lvl_1": "Low", "lvl_2": "Medium", "lvl_3": "High", "lvl_4": "Very high",
+        "wt_shallow": "Warning: groundwater is close to the surface here (0 m at the coast, per the study). Salts can rise to the roots and the soil can become waterlogged, so check drainage.",
+        "wt_central": "Groundwater is deeper in the central plain (up to about 9 m, per the study), which usually lowers the risk of salts rising.",
+        "sal_warn4": "Salinity here is higher than any listed crop can tolerate, so every option is at risk. Consider less saline water or very salt-tolerant crops.",
+        "u_m3": "m³",
+        "head_less": "less water per hectare than {prev}",
+        "head_more": "more water per hectare than {prev}",
+        "head_same": "about the same water as {prev}",
+        "head_detail": "{top}: {a} m³ per hectare | {prev}: {b} m³ per hectare",
+        "how_title": "How the scores work",
+        "how": [
+            ("Irrigation need", "irrigation = max(0, water-use factor × evaporation − usable rain)", "Standard FAO method applied to NASA data over the crop's growing months. Evaporation is estimated from temperature and sunlight (Hargreaves)."),
+            ("Water score", "100 × (1 − (irrigation − lowest) / (highest − lowest))", "Compares crops with each other, so it changes if the crop list changes."),
+            ("Soil score", "start 50 | new family +10 | same family −35 | fixes N +20 | N-hungry after legume +15 | two N-hungry −15 | roots differ ≥ 0.4 m +10", "Assumption: rule-of-thumb points, not validated."),
+            ("Salinity score", "100 if tolerance ≥ level, else 100 − 50 × (level − tolerance)", "Assumption: the 50-point step is a rule of thumb, and crop tolerances are approximate."),
+            ("Final score", "(w1×water + w2×soil + w3×salinity) / (w1 + w2 + w3)", "w1, w2 and w3 are your three sliders."),
+            ("Zone salinity", "ppm: ≤700 low | ≤2,100 medium | ≤3,000 high | above very high", "Zone values are modeled results from Al-Hadhrami et al. (2024). Converting them to levels is our own estimate and needs expert review."),
+            ("Future view", "evaporation × (T + warming + 17.8) / (T + 17.8)", "Warming = the NASA temperature trend per decade × years to 2040. Rainfall is not projected because it varies too much between years."),
+        ],
+    },
+}
+for _lg in STR:
+    STR[_lg].update(STR3[_lg])
+
+# مناطق سهل صلالة من دراسة Al-Hadhrami وآخرون (2024)، قيم نموذجية (ppm)
+ZONE_IDS = ["coast", "injection", "central", "mountain"]
+ZONES = {  # متوسط آبار الدراسة / mean of the study's wells
+    "coast": {"now": 2520, "future": 28898},
+    "injection": {"now": 2756, "future": 5895},
+    "central": {"now": 658, "future": 1165},
+    "mountain": {"now": 650, "future": 650},
+}
+ZONE_TXT = {  # كما في الدراسة / as reported
+    "coast": ("2,520", "28,898"),
+    "injection": ("2,520–2,992", "5,631–6,160"),
+    "central": ("586–775", "995–1,468"),
+    "mountain": ("500–800", None),
+}
+
+
+def tds_to_level(tds: float) -> int:
+    """تحويل التقدير: ≤700 منخفضة، ≤2100 متوسطة، ≤3000 عالية، غير ذلك عالية جداً (تقدير منا)."""
+    return 1 if tds <= 700 else 2 if tds <= 2100 else 3 if tds <= 3000 else 4
 
 # ---------------------------------------------------------------
 # بيانات NASA POWER
@@ -408,15 +503,16 @@ def peff_month(p: float) -> float:
     return max(0.0, 0.6 * p - 10) if p <= 70 else 0.8 * p - 24
 
 
-def season_water(clim: pd.DataFrame, params: dict, start_month: int, scenario: str = "now"):
-    """احتياج الريّ = (Kc × التبخر-نتح من ناسا) - المطر الفعّال، على امتداد موسم المحصول."""
-    et_f, rain_f = (1.10, 0.85) if scenario == "stress" else (1.0, 1.0)
+def season_water(clim: pd.DataFrame, params: dict, start_month: int, delta_t: float = 0.0):
+    """احتياج الريّ = (معامل الماء × التبخر) - المطر المفيد، على امتداد موسم المحصول."""
     remaining, m = float(params["days"]), int(start_month)
     etc = peff = 0.0
     while remaining > 0:
         frac = min(1.0, remaining / 30.4)
-        etc += params["kc"] * clim.loc[m, "et0_mm"] * et_f * frac
-        peff += peff_month(clim.loc[m, "rain_mm"] * rain_f) * frac
+        t = clim.loc[m, "T2M"]
+        et0 = clim.loc[m, "et0_mm"] * (t + delta_t + 17.8) / (t + 17.8)
+        etc += params["kc"] * et0 * frac
+        peff += peff_month(clim.loc[m, "rain_mm"]) * frac
         remaining -= 30.4
         m = m % 12 + 1
     return etc, peff, max(0.0, etc - peff)
@@ -452,9 +548,9 @@ def salt_score(cid: str, level: float) -> float:
     return 100.0 if tol >= level else max(0.0, 100.0 - (level - tol) * 50)
 
 
-def recommend(clim, prev_id, start_month, sal_level, weights, scenario="now"):
+def recommend(clim, prev_id, start_month, sal_level, weights, delta_t=0.0):
     """يرتّب المحاصيل التالية. weights = (مياه، تربة، ملوحة)."""
-    water = {cid: season_water(clim, p, start_month, scenario)[2] for cid, p in CROP_PARAMS.items()}
+    water = {cid: season_water(clim, p, start_month, delta_t)[2] for cid, p in CROP_PARAMS.items()}
     prev_ir = water[prev_id]
     annual = [v for cid, v in water.items() if CROP_PARAMS[cid]["days"] < 360]
     lo, hi = min(annual), max(annual)
@@ -468,13 +564,13 @@ def recommend(clim, prev_id, start_month, sal_level, weights, scenario="now"):
         s_s, soil_why = soil_score(prev_id, cid)
         s_t = salt_score(cid, sal_level)
         total = (w[0] * s_w + w[1] * s_s + w[2] * s_t) / w_sum
-        why = [("good", "ir", {"ir": int(round(ir, -1))})]
+        why = [("good", "ir", {"ir": int(round(ir * 10, -2))})]
         if cid != prev_id:
             d = prev_ir - ir
             if d >= 20:
-                why.append(("good", "ir_less", {"d": int(round(d, -1))}))
+                why.append(("good", "ir_less", {"d": int(round(d * 10, -2))}))
             elif d <= -20:
-                why.append(("warn", "ir_more", {"d": int(round(-d, -1))}))
+                why.append(("warn", "ir_more", {"d": int(round(-d * 10, -2))}))
         why += [(k, c, {}) for k, c in soil_why]
         why.append(("good", "salt_ok", {}) if s_t >= 100 else ("warn", "salt_bad", {}))
         out.append(
@@ -597,6 +693,14 @@ html, body, .stApp, [data-testid="stAppViewContainer"]{
 .why.warn .mk{border-color:var(--charcoal); color:var(--charcoal);}
 .others{font-size:14px; color:var(--graphite); margin-top:20px; line-height:1.9;}
 .others b{color:var(--charcoal); font-weight:600;}
+.headline{background:var(--forest); color:#fff; border-radius:30px; padding:30px; margin-top:24px;}
+.hl-num{font-family:'Cormorant Garamond','Amiri',serif; font-size:clamp(46px,9vw,68px); line-height:1.05; font-weight:500; font-variant-numeric:lining-nums;}
+.hl-num small{font-family:'Inter','IBM Plex Sans Arabic',sans-serif; font-size:20px; opacity:.85; font-weight:400;}
+.hl-txt{font-size:18px; margin-top:6px;}
+.hl-det{font-size:14px; opacity:.85; margin-top:12px;}
+.fx{direction:ltr; text-align:left; font-family:ui-monospace,Menlo,Consolas,monospace; font-size:13px; background:#fff; border-radius:12px; padding:10px 14px; margin:8px 0 4px; line-height:1.6;}
+.how{padding:12px 0; border-top:1px solid rgba(7,80,63,.18);}
+[data-testid="stExpander"]{border:1px solid var(--moss) !important; border-radius:20px !important; background:#fff;}
 </style>
 """
 
@@ -728,8 +832,37 @@ def rec_cards_html(results, lang, S, prev_id) -> str:
     return f'<div class="grid-wide">{"".join(cards)}</div>'
 
 
+def zone_info_html(zone, S, scenario) -> str:
+    now, fut = ZONE_TXT[zone]
+    lvl = tds_to_level(ZONES[zone]["future" if scenario == "future" else "now"])
+    txt = S["z_tds"].format(now=now, fut=fut) if fut else S["z_tds_nofut"].format(now=now)
+    out = (
+        f'<div class="card sage" style="margin-top:16px"><div class="kpi-label">{S["z_level"].format(lvl=S["lvl_%d" % lvl])}</div>'
+        f'<div class="small-note" style="margin-top:6px">{txt}</div><div class="small-note">{S["z_src"]}</div></div>'
+    )
+    wt = {"coast": "wt_shallow", "injection": "wt_shallow", "central": "wt_central"}.get(zone)
+    notes = [(wt, "warn" if wt == "wt_shallow" else "good")] if wt else []
+    if lvl >= 4:
+        notes.append(("sal_warn4", "warn"))
+    for key, kind in notes:
+        out += (
+            f'<div class="card {"peach" if kind == "warn" else "ash"}" style="margin-top:16px">'
+            f'<div class="why {kind}" style="border-top:none;padding:0"><span class="mk">{"!" if kind == "warn" else "i"}</span>'
+            f'<span>{S[key]}</span></div></div>'
+        )
+    return out
+
+
+def how_html(S) -> str:
+    return "".join(
+        f'<div class="how"><div class="benefit-title">{t}</div><div class="fx">{f}</div>'
+        f'<div class="small-note">{x}</div></div>'
+        for t, f, x in S["how"]
+    )
+
+
 def main():
-    st.set_page_config(page_title="Field Shift · ظفار / Dhofar", page_icon="🌾", layout="wide")
+    st.set_page_config(page_title="Field Shift · ظفار / Dhofar", layout="wide")
 
     # مبدّل اللغة / language switch
     pick = st.radio(
@@ -786,23 +919,39 @@ def main():
         format_func=lambda m: MONTHS[lang][m - 1], key="month",
     )
     b1, b2 = st.columns(2)
-    sal_key = b1.selectbox(
-        S["in_sal"], ["low", "med", "high"], index=1,
-        format_func=lambda k: S["sal_" + k], key="sal",
-    )
     scenario = b2.radio(
-        S["in_scn"], ["now", "stress"], horizontal=True,
+        S["in_scn"], ["now", "future"], horizontal=True,
         format_func=lambda k: S["scn_" + k], key="scn",
     )
+    zone = "manual"
+    if site in ("salalah", "taqah"):
+        zone = b1.selectbox(
+            S["zone_label"], ZONE_IDS + ["manual"], index=2,
+            format_func=lambda k: S["z_" + k], key="zone",
+        )
+    else:
+        st.markdown(f'<div class="small-note">{S["zone_outside"]}</div>', unsafe_allow_html=True)
+    if zone == "manual":
+        sal_key = b1.selectbox(
+            S["in_sal"], ["low", "med", "high"], index=1,
+            format_func=lambda k: S["sal_" + k], key="sal",
+        )
+        level = {"low": 1.0, "med": 2.0, "high": 3.0}[sal_key]
+    else:
+        level = float(tds_to_level(ZONES[zone]["future" if scenario == "future" else "now"]))
+        st.markdown(zone_info_html(zone, S, scenario), unsafe_allow_html=True)
     st.markdown(f'<div class="small-note">{S["pri_title"]}</div>', unsafe_allow_html=True)
     p1, p2, p3 = st.columns(3)
     w_water = p1.slider(S["p_water"], 0, 10, 5, key="w_water")
     w_soil = p2.slider(S["p_soil"], 0, 10, 5, key="w_soil")
     w_salt = p3.slider(S["p_salt"], 0, 10, 5, key="w_salt")
 
+    t_trend = decade_trend(ann["temp_c"])
+    delta_t = 0.0
+    if scenario == "future" and not np.isnan(t_trend):
+        delta_t = t_trend * max(0, 2040 - END_YEAR) / 10
     results, prev_ir = recommend(
-        clim, prev_id, month, {"low": 1.0, "med": 2.0, "high": 3.0}[sal_key],
-        (w_water, w_soil, w_salt), scenario,
+        clim, prev_id, month, level, (w_water, w_soil, w_salt), delta_t,
     )
     top = results[:3]
     st.markdown(
@@ -811,15 +960,21 @@ def main():
     )
     st.markdown(rec_cards_html(top, lang, S, prev_id), unsafe_allow_html=True)
 
-    saving = prev_ir - top[0]["ir"]
-    sum_cards = "".join(
-        [
-            kpi_card(S["sum_best"], fmt(top[0]["ir"]), S["u_mm_season"], "sage"),
-            kpi_card(S["sum_prev"], fmt(prev_ir), S["u_mm_season"], "ash"),
-            kpi_card(S["sum_diff"], fmt(saving, 0, True), S["u_mm_season"], "peach"),
-        ]
+    saving = (prev_ir - top[0]["ir"]) * 10  # م³/هكتار: 1 ملم = 10 م³/هكتار
+    kind = "head_less" if saving >= 200 else "head_more" if saving <= -200 else "head_same"
+    num = "0" if kind == "head_same" else f"{abs(int(round(saving, -2))):,}"
+    top_name, prev_name = CROP_NAME[top[0]["id"]][lang], CROP_NAME[prev_id][lang]
+    detail = S["head_detail"].format(
+        top=top_name, a=f"{int(round(top[0]['ir'] * 10, -2)):,}",
+        prev=prev_name, b=f"{int(round(prev_ir * 10, -2)):,}",
     )
-    st.markdown(f'<div class="grid" style="margin-top:24px">{sum_cards}</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="headline">'
+        f'<div class="hl-num">{num} <small>{S["u_m3"]}</small></div>'
+        f'<div class="hl-txt">{S[kind].format(prev=prev_name)}</div>'
+        f'<div class="hl-det">{detail}</div></div>',
+        unsafe_allow_html=True,
+    )
 
     others = " · ".join(
         f'<b>{CROP_NAME[r["id"]][lang]}</b> {r["score"]}' for r in results[3:]
@@ -828,9 +983,14 @@ def main():
         st.markdown(
             f'<div class="others">{S["others"]}: {others}</div>', unsafe_allow_html=True
         )
-    if scenario == "stress":
-        st.markdown(f'<div class="small-note">{S["stress_note"]}</div>', unsafe_allow_html=True)
+    if scenario == "future":
+        st.markdown(
+            f'<div class="small-note">{S["future_note"].format(dt=f"{delta_t:+.1f}")}</div>',
+            unsafe_allow_html=True,
+        )
     st.markdown(f'<div class="small-note">{S["disclaimer"]}</div>', unsafe_allow_html=True)
+    with st.expander(S["how_title"]):
+        st.markdown(how_html(S), unsafe_allow_html=True)
 
     # 3) ملخص المناخ / climate summary
     st.markdown(
