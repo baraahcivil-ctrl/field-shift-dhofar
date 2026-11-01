@@ -399,6 +399,64 @@ STR3 = {
 for _lg in STR:
     STR[_lg].update(STR3[_lg])
 
+STR4 = {
+    "ar": {
+        "tag_step": "مخطط الدورات الزراعية",
+        "use_title": "كيف تستخدمه؟",
+        "use_steps": ["اختر موقعك والجزء الذي يقع فيه حقلك", "أخبرنا بمحصولك السابق وشهر الزراعة وما يهمك", "اقرأ أفضل المحاصيل للزراعة التالية والماء الذي توفّره"],
+        "inputs_title": "أخبرنا عن حقلك",
+        "inputs_intro": "بضع اختيارات سريعة، ولا تحتاج معرفة تقنية.",
+        "h_zone": "اختر جزء السهل الذي يقع فيه حقلك. هو الذي يحدد ملوحة المياه.",
+        "h_prev": "المحصول الذي حصدته آخر مرة.",
+        "h_month": "الشهر الذي تنوي الزراعة فيه.",
+        "h_prio": "يغيّر ترتيب المحاصيل.",
+        "h_future": "يعرض ظروف 2040: مناخاً أدفأ وتوقعات الدراسة للملوحة.",
+        "in_prio": "ما الأهم لك؟",
+        "prio_water": "توفير المياه", "prio_soil": "حماية التربة", "prio_bal": "متوازن",
+        "future_toggle": "عرض توقعات 2040",
+        "ans_less": "بعد {prev}، الأنسب أن تزرع {top} في {month}: ماء أقل بنحو {n} م³ للهكتار.",
+        "ans_more": "بعد {prev}، الأنسب أن تزرع {top} في {month}. يحتاج ماءً أكثر بنحو {n} م³ للهكتار، لكن الترتيب يراعي التربة والملوحة أيضاً.",
+        "ans_same": "بعد {prev}، الأنسب أن تزرع {top} في {month}، بنفس احتياج المياه تقريباً.",
+        "fit_strong": "ملاءمة قوية", "fit_good": "ملاءمة جيدة", "fit_weak": "ملاءمة ضعيفة",
+        "res_title": "أفضل 3 محاصيل للزراعة التالية",
+        "clim_title2": "المناخ في موقعك",
+        "clim_intro2": "بيانات ناسا، متوسط {s}–{e}.",
+        "f_warm": "اتجاه الحرارة",
+        "exp_crops": "معلومات عن المحاصيل",
+        "final": ("الدرجة النهائية", "(w1×water + w2×soil + w3×salinity) / (w1 + w2 + w3)", "الأوزان (مياه/تربة/ملوحة) تحددها أولويتك: توفير المياه 8/3/4، حماية التربة 3/8/4، متوازن 5/5/5."),
+    },
+    "en": {
+        "tag_step": "Crop rotation planner",
+        "use_title": "How to use it",
+        "use_steps": ["Pick your location and the part of the plain where your field is", "Tell us your last crop, planting month and what matters most", "Read the best crops to plant next and the water you save"],
+        "inputs_title": "Tell us about your field",
+        "inputs_intro": "A few quick choices. No technical knowledge needed.",
+        "h_zone": "Pick the part of the plain where your field is. It sets the water salinity.",
+        "h_prev": "The crop you harvested last.",
+        "h_month": "The month you plan to plant.",
+        "h_prio": "Changes how the crops are ranked.",
+        "h_future": "Shows 2040 conditions: a warmer climate and the study's salinity projection.",
+        "in_prio": "What matters most to you?",
+        "prio_water": "Save water", "prio_soil": "Protect soil", "prio_bal": "Balanced",
+        "future_toggle": "Show the 2040 outlook",
+        "ans_less": "After {prev}, plant {top} in {month}: about {n} m³ less water per hectare.",
+        "ans_more": "After {prev}, plant {top} in {month}. It needs about {n} m³ more water per hectare, but the ranking also weighs soil and salinity.",
+        "ans_same": "After {prev}, plant {top} in {month}, with about the same water need.",
+        "fit_strong": "Strong fit", "fit_good": "Good fit", "fit_weak": "Weak fit",
+        "res_title": "Best 3 crops to plant next",
+        "clim_title2": "Climate at your location",
+        "clim_intro2": "NASA data, averages for {s}–{e}.",
+        "f_warm": "Temperature trend",
+        "exp_crops": "Crop information",
+        "final": ("Final score", "(w1×water + w2×soil + w3×salinity) / (w1 + w2 + w3)", "The weights (water / soil / salinity) come from your priority: Save water 8/3/4, Protect soil 3/8/4, Balanced 5/5/5."),
+    },
+}
+for _lg in STR:
+    STR[_lg].update(STR4[_lg])
+    STR[_lg]["how"][4] = STR4[_lg]["final"]
+PRIO = {"water": (8, 3, 4), "soil": (3, 8, 4), "bal": (5, 5, 5)}  # أوزان (مياه، تربة، ملوحة)
+
+
 # مناطق سهل صلالة من دراسة Al-Hadhrami وآخرون (2024)، قيم نموذجية (ppm)
 ZONE_IDS = ["coast", "injection", "central", "mountain"]
 ZONES = {  # متوسط آبار الدراسة / mean of the study's wells
@@ -699,6 +757,13 @@ html, body, .stApp, [data-testid="stAppViewContainer"]{
 .hl-txt{font-size:18px; margin-top:6px;}
 .hl-det{font-size:14px; opacity:.85; margin-top:12px;}
 .fx{direction:ltr; text-align:left; font-family:ui-monospace,Menlo,Consolas,monospace; font-size:13px; background:#fff; border-radius:12px; padding:10px 14px; margin:8px 0 4px; line-height:1.6;}
+.hl-sentence{font-family:'Cormorant Garamond','Amiri',serif; font-size:clamp(26px,5vw,38px); line-height:1.25; font-weight:500;}
+.fit{font-size:16px; font-weight:600; margin:6px 0 14px;}
+.fit small{font-weight:400; color:var(--graphite); font-size:14px;}
+.hint{font-size:13px; color:var(--pewter); margin-top:-8px; line-height:1.5;}
+.rise{animation:rise .5s ease both;}
+@keyframes rise{from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:none;}}
+@media (prefers-reduced-motion:reduce){.rise{animation:none;}}
 .how{padding:12px 0; border-top:1px solid rgba(7,80,63,.18);}
 [data-testid="stExpander"]{border:1px solid var(--moss) !important; border-radius:20px !important; background:#fff;}
 </style>
@@ -806,30 +871,37 @@ def footer_html(S) -> str:
     )
 
 
+def pick_reasons(why, n=3):
+    ir = [w for w in why if w[1] == "ir"]
+    warns = [w for w in why if w[0] == "warn"]
+    rest = [w for w in why if w[0] == "good" and w[1] != "ir"]
+    return (ir + warns + rest)[:n]
+
+
 def rec_cards_html(results, lang, S, prev_id) -> str:
     prev_name = CROP_NAME[prev_id][lang]
     tones = ["sage", "sky", "peach"]
     cards = []
     for i, r in enumerate(results):
-        bars = "".join(
-            f'<div class="bar"><span class="bar-l">{S[k]}</span>'
-            f'<div class="bar-track"><div class="bar-fill" style="width:{r[v]}%"></div></div>'
-            f'<span class="bar-v">{r[v]}</span></div>'
-            for k, v in [("b_water", "water"), ("b_soil", "soil"), ("b_salt", "salt")]
-        )
         whys = "".join(
             f'<div class="why {kind}"><span class="mk">{"✓" if kind == "good" else "!"}</span>'
             f'<span>{S["why"][code].format(prev=prev_name, **params)}</span></div>'
-            for kind, code, params in r["why"]
+            for kind, code, params in pick_reasons(r["why"])
         )
+        fit = S["fit_strong"] if r["score"] >= 75 else S["fit_good"] if r["score"] >= 55 else S["fit_weak"]
         cards.append(
-            f'<div class="card {tones[i % 3]}">'
-            f'<span class="rank">#{i + 1}</span>'
+            f'<div class="card {tones[i % 3]} rise"><span class="rank">#{i + 1}</span>'
             f'<div class="crop-name">{CROP_NAME[r["id"]][lang]}</div>'
-            f'<div class="score">{r["score"]} <small>{S["of100"]}</small></div>'
-            f'<div class="bars">{bars}</div>{whys}</div>'
+            f'<div class="fit">{fit} <small>· {r["score"]}/100</small></div>{whys}</div>'
         )
     return f'<div class="grid-wide">{"".join(cards)}</div>'
+
+
+def sources_html(S) -> str:
+    return "".join(
+        f'<div class="how"><div class="benefit-title">{t}</div><div class="small-note">{x}</div></div>'
+        for t, x in S["notes"]
+    )
 
 
 def zone_info_html(zone, S, scenario) -> str:
@@ -861,31 +933,35 @@ def how_html(S) -> str:
     )
 
 
+def hint(col, text):
+    col.markdown(f'<div class="hint">{text}</div>', unsafe_allow_html=True)
+
+
 def main():
     st.set_page_config(page_title="Field Shift · ظفار / Dhofar", layout="wide")
 
-    # مبدّل اللغة / language switch
     pick = st.radio(
-        "Language / اللغة",
-        ["العربية", "English"],
-        horizontal=True,
-        label_visibility="collapsed",
-        key="lang",
+        "Language / اللغة", ["العربية", "English"], horizontal=True,
+        label_visibility="collapsed", key="lang",
     )
     lang = "ar" if pick == "العربية" else "en"
     S = STR[lang]
-
     st.markdown(CSS.replace("__DIR__", "rtl" if lang == "ar" else "ltr"), unsafe_allow_html=True)
-    st.markdown(marquee_html(S), unsafe_allow_html=True)
     st.markdown(hero_html(S), unsafe_allow_html=True)
 
-    # 1) الموقع / location
-    st.markdown(section_html(S["site_title"], S["site_intro"]), unsafe_allow_html=True)
+    # كيف تستخدمه / how to use
+    steps = "".join(
+        f'<div class="card {tone}"><div class="kpi-value" style="font-size:38px">{i}</div>'
+        f'<div class="small-note" style="font-size:15px;color:var(--charcoal)">{txt}</div></div>'
+        for i, (tone, txt) in enumerate(zip(["sage", "sky", "peach"], S["use_steps"]), 1)
+    )
+    st.markdown(section_html(S["use_title"]) + f'<div class="grid">{steps}</div>', unsafe_allow_html=True)
+
+    # المدخلات / inputs
+    st.markdown(section_html(S["inputs_title"], S["inputs_intro"]), unsafe_allow_html=True)
     site = st.selectbox(
-        S["site_label"],
-        list(SITES.keys()) + ["custom"],
-        format_func=lambda k: SITE_NAMES[lang][k],
-        key="site",
+        S["site_label"], list(SITES.keys()) + ["custom"],
+        format_func=lambda k: SITE_NAMES[lang][k], key="site",
     )
     if site == "custom":
         c1, c2 = st.columns(2)
@@ -893,9 +969,47 @@ def main():
         lon = c2.number_input(S["lon"], value=54.09, format="%.3f", key="lon")
     else:
         lat, lon = SITES[site]
-        st.markdown(
-            f'<div class="small-note">{S["coords"]}: {lat}, {lon}</div>', unsafe_allow_html=True
+
+    r1a, r1b = st.columns(2)
+    zone = "manual"
+    if site in ("salalah", "taqah"):
+        zone = r1a.selectbox(
+            S["zone_label"], ZONE_IDS + ["manual"], index=2,
+            format_func=lambda k: S["z_" + k], key="zone",
         )
+        hint(r1a, S["h_zone"])
+    else:
+        r1a.markdown(f'<div class="hint" style="margin-top:0">{S["zone_outside"]}</div>', unsafe_allow_html=True)
+    if zone == "manual":
+        sal_key = r1a.selectbox(
+            S["in_sal"], ["low", "med", "high"], index=1,
+            format_func=lambda k: S["sal_" + k], key="sal",
+        )
+    prev_id = r1b.selectbox(
+        S["in_prev"], CROP_IDS, format_func=lambda k: CROP_NAME[k][lang], key="prev"
+    )
+    hint(r1b, S["h_prev"])
+
+    r2a, r2b = st.columns(2)
+    month = r2a.selectbox(
+        S["in_month"], list(range(1, 13)), index=9,
+        format_func=lambda m: MONTHS[lang][m - 1], key="month",
+    )
+    hint(r2a, S["h_month"])
+    prio = r2b.radio(
+        S["in_prio"], ["water", "soil", "bal"], index=2, horizontal=True,
+        format_func=lambda k: S["prio_" + k], key="prio",
+    )
+    hint(r2b, S["h_prio"])
+    future = st.toggle(S["future_toggle"], key="future")
+    hint(st, S["h_future"])
+    scenario = "future" if future else "now"
+
+    if zone == "manual":
+        level = {"low": 1.0, "med": 2.0, "high": 3.0}[sal_key]
+    else:
+        level = float(tds_to_level(ZONES[zone]["future" if future else "now"]))
+        st.markdown(zone_info_html(zone, S, scenario), unsafe_allow_html=True)
 
     with st.spinner(S["spinner"]):
         try:
@@ -904,137 +1018,70 @@ def main():
             st.error(S["error"])
             st.code(str(e))
             st.stop()
-
     ann = annual_summary(df)
     clim = monthly_climatology(df)
-
-    # 2) التوصية / recommendation (قلب المشروع)
-    st.markdown(section_html(S["rec_title"], S["rec_intro"]), unsafe_allow_html=True)
-    a1, a2 = st.columns(2)
-    prev_id = a1.selectbox(
-        S["in_prev"], CROP_IDS, format_func=lambda k: CROP_NAME[k][lang], key="prev"
-    )
-    month = a2.selectbox(
-        S["in_month"], list(range(1, 13)), index=9,
-        format_func=lambda m: MONTHS[lang][m - 1], key="month",
-    )
-    b1, b2 = st.columns(2)
-    scenario = b2.radio(
-        S["in_scn"], ["now", "future"], horizontal=True,
-        format_func=lambda k: S["scn_" + k], key="scn",
-    )
-    zone = "manual"
-    if site in ("salalah", "taqah"):
-        zone = b1.selectbox(
-            S["zone_label"], ZONE_IDS + ["manual"], index=2,
-            format_func=lambda k: S["z_" + k], key="zone",
-        )
-    else:
-        st.markdown(f'<div class="small-note">{S["zone_outside"]}</div>', unsafe_allow_html=True)
-    if zone == "manual":
-        sal_key = b1.selectbox(
-            S["in_sal"], ["low", "med", "high"], index=1,
-            format_func=lambda k: S["sal_" + k], key="sal",
-        )
-        level = {"low": 1.0, "med": 2.0, "high": 3.0}[sal_key]
-    else:
-        level = float(tds_to_level(ZONES[zone]["future" if scenario == "future" else "now"]))
-        st.markdown(zone_info_html(zone, S, scenario), unsafe_allow_html=True)
-    st.markdown(f'<div class="small-note">{S["pri_title"]}</div>', unsafe_allow_html=True)
-    p1, p2, p3 = st.columns(3)
-    w_water = p1.slider(S["p_water"], 0, 10, 5, key="w_water")
-    w_soil = p2.slider(S["p_soil"], 0, 10, 5, key="w_soil")
-    w_salt = p3.slider(S["p_salt"], 0, 10, 5, key="w_salt")
-
     t_trend = decade_trend(ann["temp_c"])
     delta_t = 0.0
-    if scenario == "future" and not np.isnan(t_trend):
+    if future and not np.isnan(t_trend):
         delta_t = t_trend * max(0, 2040 - END_YEAR) / 10
-    results, prev_ir = recommend(
-        clim, prev_id, month, level, (w_water, w_soil, w_salt), delta_t,
-    )
-    top = results[:3]
-    st.markdown(
-        section_html(S["res_title"], S["res_intro"].format(prev=CROP_NAME[prev_id][lang])),
-        unsafe_allow_html=True,
-    )
-    st.markdown(rec_cards_html(top, lang, S, prev_id), unsafe_allow_html=True)
 
+    # النتيجة / result
+    results, prev_ir = recommend(clim, prev_id, month, level, PRIO[prio], delta_t)
+    top = results[:3]
+    prev_name, top_name = CROP_NAME[prev_id][lang], CROP_NAME[top[0]["id"]][lang]
     saving = (prev_ir - top[0]["ir"]) * 10  # م³/هكتار: 1 ملم = 10 م³/هكتار
-    kind = "head_less" if saving >= 200 else "head_more" if saving <= -200 else "head_same"
-    num = "0" if kind == "head_same" else f"{abs(int(round(saving, -2))):,}"
-    top_name, prev_name = CROP_NAME[top[0]["id"]][lang], CROP_NAME[prev_id][lang]
+    kind = "ans_less" if saving >= 200 else "ans_more" if saving <= -200 else "ans_same"
+    answer = S[kind].format(
+        prev=prev_name, top=top_name, month=MONTHS[lang][month - 1],
+        n=f"{abs(int(round(saving, -2))):,}",
+    )
     detail = S["head_detail"].format(
         top=top_name, a=f"{int(round(top[0]['ir'] * 10, -2)):,}",
         prev=prev_name, b=f"{int(round(prev_ir * 10, -2)):,}",
     )
+    st.markdown(section_html(S["res_title"]), unsafe_allow_html=True)
     st.markdown(
-        '<div class="headline">'
-        f'<div class="hl-num">{num} <small>{S["u_m3"]}</small></div>'
-        f'<div class="hl-txt">{S[kind].format(prev=prev_name)}</div>'
+        f'<div class="headline rise"><div class="hl-sentence">{answer}</div>'
         f'<div class="hl-det">{detail}</div></div>',
         unsafe_allow_html=True,
     )
-
-    others = " · ".join(
-        f'<b>{CROP_NAME[r["id"]][lang]}</b> {r["score"]}' for r in results[3:]
-    )
-    if others:
-        st.markdown(
-            f'<div class="others">{S["others"]}: {others}</div>', unsafe_allow_html=True
-        )
-    if scenario == "future":
+    st.markdown('<div style="height:24px"></div>', unsafe_allow_html=True)
+    st.markdown(rec_cards_html(top, lang, S, prev_id), unsafe_allow_html=True)
+    if future:
         st.markdown(
             f'<div class="small-note">{S["future_note"].format(dt=f"{delta_t:+.1f}")}</div>',
             unsafe_allow_html=True,
         )
     st.markdown(f'<div class="small-note">{S["disclaimer"]}</div>', unsafe_allow_html=True)
-    with st.expander(S["how_title"]):
-        st.markdown(how_html(S), unsafe_allow_html=True)
 
-    # 3) ملخص المناخ / climate summary
+    # المناخ / climate (3 facts + 1 chart)
     st.markdown(
-        section_html(S["clim_title"], S["clim_intro"].format(s=START_YEAR, e=END_YEAR)),
+        section_html(S["clim_title2"], S["clim_intro2"].format(s=START_YEAR, e=END_YEAR)),
         unsafe_allow_html=True,
     )
-    cards = "".join(
+    facts = "".join(
         [
-            kpi_card(S["k_temp"], fmt(ann["temp_c"].mean(), 1), S["u_c"], "peach"),
             kpi_card(S["k_rain"], fmt(ann["rain_mm"].mean()), S["u_mm"], "sky"),
             kpi_card(S["k_et0"], fmt(ann["et0_mm"].mean()), S["u_mm"], "sage"),
-            kpi_card(S["k_def"], fmt(ann["deficit_mm"].mean()), S["u_mm"], "ash"),
+            kpi_card(S["f_warm"], fmt(t_trend, 2, True), S["u_c_dec"], "peach"),
         ]
     )
-    st.markdown(f'<div class="grid">{cards}</div>', unsafe_allow_html=True)
-
+    st.markdown(f'<div class="grid">{facts}</div>', unsafe_allow_html=True)
     st.markdown(f'<div class="chart-cap">{S["cap_bar"]}</div>', unsafe_allow_html=True)
     st.bar_chart(
         clim[["rain_mm", "et0_mm"]].rename(columns={"rain_mm": S["s_rain"], "et0_mm": S["s_et0"]}),
-        color=["#07503f", "#6d6d6d"],
-        height=320,
+        color=["#07503f", "#6d6d6d"], height=300,
     )
-
-    # 4) الاتجاه / trend
-    st.markdown(section_html(S["trend_title"], S["trend_intro"]), unsafe_allow_html=True)
-    trend_cards = "".join(
-        [
-            kpi_card(S["t_temp"], fmt(decade_trend(ann["temp_c"]), 2, True), S["u_c_dec"], "peach"),
-            kpi_card(S["t_rain"], fmt(decade_trend(ann["rain_mm"]), 0, True), S["u_mm_dec"], "sky"),
-            kpi_card(S["t_def"], fmt(decade_trend(ann["deficit_mm"]), 0, True), S["u_mm_dec"], "sage"),
-        ]
-    )
-    st.markdown(f'<div class="grid">{trend_cards}</div>', unsafe_allow_html=True)
-    st.markdown(f'<div class="chart-cap">{S["cap_temp"]}</div>', unsafe_allow_html=True)
-    st.line_chart(ann[["temp_c"]].rename(columns={"temp_c": S["t_temp"]}), color="#07503f", height=260)
-    st.markdown(f'<div class="chart-cap">{S["cap_rain"]}</div>', unsafe_allow_html=True)
-    st.line_chart(ann[["rain_mm"]].rename(columns={"rain_mm": S["t_rain"]}), color="#07503f", height=260)
     st.markdown(f'<div class="small-note">{S["trend_note"]}</div>', unsafe_allow_html=True)
 
-    # 5) المحاصيل / crops
-    st.markdown(section_html(S["crops_title"], S["crops_intro"]), unsafe_allow_html=True)
-    st.markdown(crop_cards_html(lang, S), unsafe_allow_html=True)
-
-    st.markdown(notes_html(S), unsafe_allow_html=True)
+    # تفاصيل قابلة للطي / details
+    st.markdown('<div style="height:24px"></div>', unsafe_allow_html=True)
+    with st.expander(S["exp_crops"]):
+        st.markdown(crop_cards_html(lang, S), unsafe_allow_html=True)
+    with st.expander(S["how_title"]):
+        st.markdown(how_html(S), unsafe_allow_html=True)
+    with st.expander(S["notes_title"]):
+        st.markdown(sources_html(S), unsafe_allow_html=True)
     st.markdown(footer_html(S), unsafe_allow_html=True)
 
 
